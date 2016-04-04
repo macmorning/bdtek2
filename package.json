@@ -10,7 +10,18 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.15.0",
+    "copy": "^0.2.0",
     "express": "^4.13.4",
-    "firebase": "^2.4.2"
+    "firebase": "^2.4.2",
+    "grunt": "^0.4.5",
+    "grunt-contrib-concat": "^1.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-cssmin": "^1.0.1",
+    "grunt-contrib-imagemin": "^1.0.0",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-contrib-uglify": "^1.0.1",
+    "imagemin-mozjpeg": "^5.1.0",
+    "jshint": "^2.9.1",
+    "uglify": "^0.1.5"
   }
 }

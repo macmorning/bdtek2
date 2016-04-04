@@ -53,30 +53,6 @@ function resUnauthorized(res,err,data) {
     return true;
 }
 
-
-function loadConfig() {
-    fs.readFile(configFile, function(err, data) {
-        if(err) {
-            console.log(currTime() + ' [CONFIG] ... ' + err);
-            return false;
-        } else {
-            var latestAnnouncement = '';
-            try { 
-                var json = JSON.parse(data); 
-            }
-            catch(err) {
-                console.log(currTime() + ' [CONFIG] ... ' + err);
-                return false;
-            }
-            AWSAccessKeyId = json.AWSAccessKeyId;
-            AWSSecretKey = json.AWSSecretKey;
-            AssociateTag = json.AssociateTag;
-            initFirebase(json.myFirebaseURL,json.myFirebaseSecret);
-            return true;
-        }                
-    });
-}
-
 function initFirebase(url,secret) {
     console.log(currTime() + ' [CONFIG] ... connecting to Firebase instance ' + url);
     myFirebaseRef = new Firebase(url);
@@ -90,10 +66,32 @@ function initFirebase(url,secret) {
     return true;
 }
 
+function loadConfig() {
+    fs.readFile(configFile, function(err, data) {
+        if(err) {
+            console.log(currTime() + ' [CONFIG] ... ' + err);
+            return false;
+        } else {
+            var latestAnnouncement = '';
+            try { 
+                var json = JSON.parse(data); 
+                AWSAccessKeyId = json.AWSAccessKeyId;
+                AWSSecretKey = json.AWSSecretKey;
+                AssociateTag = json.AssociateTag;
+                initFirebase(json.myFirebaseURL,json.myFirebaseSecret);
+                return true;
+            }
+            catch(err) {
+                console.log(currTime() + ' [CONFIG] ... ' + err);
+                return false;
+            }
+        }                
+    });
+}
+
+
 
 function logout() {
-    myUserID = "";
-    myUserName = "";
     myFirebaseRef.unauth();
     location.reload();
 }
@@ -103,9 +101,9 @@ loadConfig();
 //create the app instance
 var app = express();
 //serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'client')));
 //parse POST data
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
 /*
 app.get('/data', function(req, res){
     res.send([{ name:"Test 1" }, { name:"Test 2" }]);
