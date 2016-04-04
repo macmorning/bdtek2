@@ -6,13 +6,11 @@ var express = require('express'),
     path = require('path'),
     fs = require('fs'),
     Firebase = require('firebase'),
-    bodyParser = require('body-parser');
+    bodyParser = require('body-parser'),
+    amazon = require('amazon-product-api');
 var configFile = SERVERDIR + 'config.json';
 var myFirebaseRef;
-
-var AWSAccessKeyId = "";
-var AWSSecretKey = "";
-var AssociateTag = "";
+var myAmazonClient;
 
 function currTime() {
     // write current time in HH:mm format
@@ -58,10 +56,30 @@ function initFirebase(url,secret) {
     myFirebaseRef = new Firebase(url);
      myFirebaseRef.authWithCustomToken(secret,function(error, authData) {
           if (error) {
-            console.log(currTime() + " [CONFIG] ... authentication failed!", error);
+            console.log(currTime() + " [CONFIG] ... Firebase authentication failed!", error);
           } else {
-            console.log(currTime() + " [CONFIG] ... authenticated successfully");
+            console.log(currTime() + " [CONFIG] ... Firebase authentication succeeded");
           }
+    });
+    return true;
+}
+
+function initAmazonClient(keyid,secret,tag) {
+    console.log(currTime() + ' [CONFIG] ... initializing Amazon client for key ' + keyid);
+    myAmazonClient = amazon.createClient({
+      awsId: keyid,
+      awsSecret: secret,
+      awsTag: tag
+    });
+    myAmazonClient.itemLookup({
+      idType: 'EAN',
+      itemId: '9782215080640',
+      domain: 'webservices.amazon.fr',
+      responseGroup: 'ItemAttributes'
+    }).then(function(results) {
+      console.log(results.MediumImage);
+    }).catch(function(err) {
+      console.log(err);
     });
     return true;
 }
@@ -72,13 +90,10 @@ function loadConfig() {
             console.log(currTime() + ' [CONFIG] ... ' + err);
             return false;
         } else {
-            var latestAnnouncement = '';
             try { 
                 var json = JSON.parse(data); 
-                AWSAccessKeyId = json.AWSAccessKeyId;
-                AWSSecretKey = json.AWSSecretKey;
-                AssociateTag = json.AssociateTag;
                 initFirebase(json.myFirebaseURL,json.myFirebaseSecret);
+                initAmazonClient(json.AWSAccessKeyId, json.AWSSecretKey, json.AssociateTag);
                 return true;
             }
             catch(err) {

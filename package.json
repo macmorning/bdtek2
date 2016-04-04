@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "amazon-product-api": "^0.3.9",
     "body-parser": "^1.15.0",
     "copy": "^0.2.0",
     "express": "^4.13.4",
