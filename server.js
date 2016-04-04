@@ -71,13 +71,19 @@ function initAmazonClient(keyid,secret,tag) {
       awsSecret: secret,
       awsTag: tag
     });
+
+
+    //exemple
     myAmazonClient.itemLookup({
       idType: 'EAN',
       itemId: '9782215080640',
       domain: 'webservices.amazon.fr',
-      responseGroup: 'ItemAttributes'
+      responseGroup: 'ItemAttributes,Images'
     }).then(function(results) {
-      console.log(results.MediumImage);
+      console.log(results[0].ItemAttributes[0].Title);
+      console.log(results[0].ItemAttributes[0].EAN);
+      console.log(results[0].MediumImage[0].URL);
+      console.log(results[0].ASIN);
     }).catch(function(err) {
       console.log(err);
     });
