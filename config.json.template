@@ -2,6 +2,6 @@
     "AWSAccessKeyId"    : "XXXXXXXXXXXXXXXXXXXXXXXXX",
     "AWSSecretKey"      : "xXxXxXxX",
     "AssociateTag"      : "xxx",
-    "myFirebaseURL"     : "https://blazing-fire-xxx.firebaseio.com",
+    "myFirebaseURL"     : "https://blazing-fire-xxx.firebaseio.com/bd",
     "myFirebaseSecret"  : "xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }

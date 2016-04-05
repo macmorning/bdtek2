@@ -59,21 +59,31 @@ function initFirebase(url,secret) {
             console.log(currTime() + " [CONFIG] ... Firebase authentication failed!", error);
           } else {
             console.log(currTime() + " [CONFIG] ... Firebase authentication succeeded");
+            myFirebaseRef.on('child_added', function(userSnapshot) {
+                var userKey = userSnapshot.key();
+                console.log(currTime() + " [FIREDB] ... User ref - " + userKey);
+                var thisUserRef = new Firebase(url + "/" + userKey, secret);
+                thisUserRef.on("child_added", function (snapshot) {
+                    console.log("bd : " + snapshot.key());
+                });
+            });
           }
     });
     return true;
 }
 
 function initAmazonClient(keyid,secret,tag) {
-    console.log(currTime() + ' [CONFIG] ... initializing Amazon client for key ' + keyid);
+    console.log(currTime() + ' [CONFIG] ... Amazon client initializing with key - ' + keyid);
     myAmazonClient = amazon.createClient({
       awsId: keyid,
       awsSecret: secret,
       awsTag: tag
     });
+    console.log(currTime() + ' [CONFIG] ... Amazon client initialized');
 
 
-    //exemple
+    // test 'Les Insectes : Pour les faire connaitre aux enfants'
+    /*
     myAmazonClient.itemLookup({
       idType: 'EAN',
       itemId: '9782215080640',
@@ -87,6 +97,8 @@ function initAmazonClient(keyid,secret,tag) {
     }).catch(function(err) {
       console.log(err);
     });
+    */
+    
     return true;
 }
 
@@ -98,8 +110,8 @@ function loadConfig() {
         } else {
             try { 
                 var json = JSON.parse(data); 
-                initFirebase(json.myFirebaseURL,json.myFirebaseSecret);
                 initAmazonClient(json.AWSAccessKeyId, json.AWSSecretKey, json.AssociateTag);
+                initFirebase(json.myFirebaseURL,json.myFirebaseSecret);
                 return true;
             }
             catch(err) {
