@@ -64,7 +64,8 @@ function initFirebase(url,secret) {
                 console.log(currTime() + " [FIREDB] ... User ref - " + userKey);
                 var thisUserRef = new Firebase(url + "/" + userKey, secret);
                 thisUserRef.on("child_added", function (snapshot) {
-                    console.log("bd : " + snapshot.key());
+                    var data = snapshot.val();
+                    console.log("bd : " + snapshot.key() + " / needSync : " + data.needSync);
                 });
             });
           }
