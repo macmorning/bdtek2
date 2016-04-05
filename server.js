@@ -51,6 +51,27 @@ function resUnauthorized(res,err,data) {
     return true;
 }
 
+function lookup(snapshot) {
+   myAmazonClient.itemLookup({
+      idType: 'EAN',
+      itemId: snapshot.key(),
+      domain: 'webservices.amazon.fr',
+      responseGroup: 'ItemAttributes,Images'
+    }).then(function(results) {
+      var data = snapshot.val();
+      console.log(results[0].ItemAttributes[0].Title);
+      console.log(results[0].ItemAttributes[0].EAN);
+      console.log(results[0].MediumImage[0].URL);
+      console.log(results[0].ASIN);
+
+      data.title = results[0].ItemAttributes[0].Title;
+      data.author = results[0].ItemAttributes[0].Author;
+      data.needLookup = 0;
+    }).catch(function(err) {
+      console.log(err);
+    });
+}
+
 function initFirebase(url,secret) {
     console.log(currTime() + ' [CONFIG] ... connecting to Firebase instance ' + url);
     myFirebaseRef = new Firebase(url);
@@ -65,13 +86,17 @@ function initFirebase(url,secret) {
                 var thisUserRef = new Firebase(url + "/" + userKey, secret);
                 thisUserRef.on("child_added", function (snapshot) {
                     var data = snapshot.val();
-                    console.log("bd : " + snapshot.key() + " / needSync : " + data.needSync);
+                    console.log("bd : " + snapshot.key() + " / needLookup : " + data.needLookup);
+                    if (data.needLookup) {
+                        lookup(snapshot);
+                    }
                 });
             });
           }
     });
     return true;
 }
+
 
 function initAmazonClient(keyid,secret,tag) {
     console.log(currTime() + ' [CONFIG] ... Amazon client initializing with key - ' + keyid);

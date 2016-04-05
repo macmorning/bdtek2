@@ -116,12 +116,6 @@
                     var ean = lines[i];
                     if (!ean) continue;
                     bdRef.child(ean).set({
-                        barcode: ean,
-                        title: "",
-                        author: "",
-                        releaseDate: "",
-                        publisher: "",
-                        link: "",
                         needLookup: 1
                     });
 				}

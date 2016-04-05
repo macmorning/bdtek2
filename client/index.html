@@ -114,13 +114,8 @@
 				var lines = $('textarea').val().split(new RegExp(separators.join('|'), 'g')); 
 				for(var i = 0;i < lines.length;i++){
                     var ean = lines[i];
+                    if (!ean) continue;
                     bdRef.child(ean).set({
-                        barcode: ean,
-                        title: "",
-                        author: "",
-                        releaseDate: "",
-                        publisher: "",
-                        link: "",
                         needLookup: 1
                     });
 				}
