@@ -78,11 +78,12 @@
 			snapshot.forEach(function(child) {
 				var data = child.val();
 				var newScoreRow = $("<tr>");
-				newScoreRow.append("<td>"+data["barcode"]+"</td>");
-				newScoreRow.append("<td id=titleFor"+data["barcode"]+ "><a href=" + data["link"] + " target='_blank'>"+data["title"]+"</a></td>");
+				newScoreRow.append("<td>"+child.key()+"</td>");
+				newScoreRow.append("<td id=titleFor"+data["barcode"]+ "><a href=" + data["detailsURL"] + " target='_blank'>"+data["title"]+"</a></td>");
 				newScoreRow.append($("<td id=authorFor"+data["barcode"]+ ">"+data["author"]+"</td>"));
-				newScoreRow.append($("<td id=publishedFor"+data["barcode"]+ ">"+data["releaseDate"]+"</td>"));
+				newScoreRow.append($("<td id=publishedFor"+data["barcode"]+ ">"+data["published"]+"</td>"));
 				newScoreRow.append($("<td id=publisherFor"+data["barcode"]+ ">"+data["publisher"]+"</td>"));
+				newScoreRow.append($("<td id=imageFor"+data["barcode"]+ "><img src='"+data["imageURL"]+"'/></td>"));
 				newScoreRow.append($("</tr>"));
 				$("#bdTekList").append(newScoreRow);
 				htmlForPath[snapshot.key()] = newScoreRow;
@@ -149,11 +150,12 @@
 		<table data-role="table" data-mini="true" class="ui-responsive" id="bdTekList">
 		  <thead>
 			<tr>
-			  <th data-priority="6">Code barre</th>
+			  <th data-priority="6">EAN</th>
 			  <th data-priority="1">Titre</th>
 			  <th data-priority="2">Auteurs</th>
 			  <th data-priority="3">Publication</th>
 			  <th data-priority="3">Editeur</th>
+              <th data-priority="3">Image</th>
 			</tr>
 		  </thead>
 		  <tbody>

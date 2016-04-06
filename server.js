@@ -58,15 +58,17 @@ function lookup(snapshot) {
       domain: 'webservices.amazon.fr',
       responseGroup: 'ItemAttributes,Images'
     }).then(function(results) {
-      var data = snapshot.val();
-      console.log(results[0].ItemAttributes[0].Title);
-      console.log(results[0].ItemAttributes[0].EAN);
-      console.log(results[0].MediumImage[0].URL);
-      console.log(results[0].ASIN);
-
-      data.title = results[0].ItemAttributes[0].Title;
-      data.author = results[0].ItemAttributes[0].Author;
-      data.needLookup = 0;
+      var dataRef = snapshot.ref();
+      console.log(currTime() + " [LOOKUP] ... Found details for " + snapshot.key() + " : " + results[0].ItemAttributes[0].Title[0]);
+      dataRef.update({
+            title: results[0].ItemAttributes[0].Title[0],
+            author: results[0].ItemAttributes[0].Author,
+            imageURL: results[0].MediumImage[0].URL,
+            detailsURL: results[0].DetailPageURL[0],
+            published: results[0].ItemAttributes[0].PublicationDate[0],
+            publisher: results[0].ItemAttributes[0].Publisher[0],
+            needLookup: 0
+      });
     }).catch(function(err) {
       console.log(err);
     });
@@ -86,7 +88,7 @@ function initFirebase(url,secret) {
                 var thisUserRef = new Firebase(url + "/" + userKey, secret);
                 thisUserRef.on("child_added", function (snapshot) {
                     var data = snapshot.val();
-                    console.log("bd : " + snapshot.key() + " / needLookup : " + data.needLookup);
+                    console.log(currTime() + " [FIREDB] ... Found " + snapshot.key() + " - needLookup : " + data.needLookup);
                     if (data.needLookup) {
                         lookup(snapshot);
                     }
