@@ -5,7 +5,7 @@
     <title>BD Tek</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css"/>
-    <link rel="stylesheet" href="css/jquery.bdtek.css"/>
+    <link rel="stylesheet" href="css/tiles.css"/>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.js"></script>
     <script src="http://cdn.firebase.com/js/client/2.3.0/firebase.js"></script>
@@ -49,6 +49,7 @@
     function authDataCallback(authData) {
         //console.log("authDataCallback");
         if (authData) {
+            //initAuthData(authData);
             console.log("User " + authData.uid + " is logged in with " + authData.provider);
         } else {
             console.log("User is logged out");
@@ -79,14 +80,21 @@
         snapshot.forEach(function(child) {
             console.log("child : " + child.key());
             var data = child.val();
-            var newScoreRow = $("<tr>");
+            /*var newScoreRow = $("<tr>");
             newScoreRow.append("<td>"+child.key()+"</td>");
             newScoreRow.append("<td id=titleFor"+data["barcode"]+ "><a href=" + data["detailsURL"] + " target='_blank'>"+data["title"]+"</a></td>");
             newScoreRow.append($("<td id=authorFor"+data["barcode"]+ ">"+data["author"]+"</td>"));
             newScoreRow.append($("<td id=publishedFor"+data["barcode"]+ ">"+data["published"]+"</td>"));
             newScoreRow.append($("<td id=publisherFor"+data["barcode"]+ ">"+data["publisher"]+"</td>"));
             newScoreRow.append($("<td id=imageFor"+data["barcode"]+ "><img src='"+data["imageURL"]+"'/></td>"));
-            newScoreRow.append($("</tr>"));
+            newScoreRow.append($("</tr>"));*/
+            var newScoreRow = $("<li>");
+            var newLink = $("<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='" + data["detailsURL"] + "' target='_blank'>");
+            newLink.append($("<img src='"+data["imageURL"]+"' class='ui-li-thumb'/>"));
+            newLink.append($("<h2>"+data["title"]+"</h2>"));
+            newLink.append($("<p>"+data["author"]+"</p>"));
+            newLink.append($("<p class='ui-li-aside'>"+data["publisher"]+"</p>"));
+            newScoreRow.append(newLink);
             $("#bdTekList").append(newScoreRow);
             htmlForPath[snapshot.key()] = newScoreRow;
             
@@ -138,7 +146,7 @@
 
 
 <!-- Start of first page -->
-<div data-role="page" id="listPage" data-theme="a">
+<div data-role="page" class="my-page" id="listPage" data-theme="b">
     <div data-role="header">
         <h1 id="listPage_header">BDTek</h1>
         <a href="#importPage" data-wrapperels="span" data-mini="true" data-rel="page" data-icon="plus" data-iconpos="notext">Importer</a>
@@ -146,14 +154,23 @@
     </div><!-- /header -->
 
     <div data-role="popup" id="dialog-modal" class="ui-content">
-        <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
+        <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
         <p id="dialog-message"></p>
     </div>
     <div role="main" class="ui-content">
         <form class="ui-filterable">
           <input id="myFilter" data-type="search">
         </form>
-        <table data-role="table" data-mode="columntoggle" class="ui-responsive" id="bdTekList" data-filter="true" data-input="#myFilter"> 
+        <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-role="listview" data-inset="true" data-filter="true" data-input="#myFilter" id="bdTekList" >
+            <li><a href="#">
+            	<img src="../_assets/img/apple.png" class="ui-li-thumb">
+            	<h2>iOS 6.1</h2>
+                <p>Apple released iOS 6.1</p>
+                <p class="ui-li-aside">iOS</p>
+            </a></li>
+        
+        </ul>
+        <!--table data-role="table" data-mode="columntoggle" class="ui-responsive" id="bdTekList" data-filter="true" data-input="#myFilter"> 
           <thead>
             <tr>
               <th data-priority="6">EAN</th>
@@ -166,13 +183,13 @@
           </thead>
           <tbody>
           </tbody>
-        </table>
+        </table-->
     </div><!-- /content -->
 
 </div><!-- /page -->
 
 <!-- Start of second page -->
-<div data-role="page" id="importPage" data-theme="a">
+<div data-role="page" id="importPage" data-theme="b">
     <header data-role="header">
         <h1 id="importPage_header">Importer des BD</h1>
         <a href="#listPage" data-wrapperels="span" data-mini="true" data-rel="page" data-icon="grid" data-iconpos="notext">Retour</a>

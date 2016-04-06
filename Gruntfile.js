@@ -44,7 +44,7 @@ module.exports = function(grunt) {
         files: [{
           expand: true,
           cwd: 'src/css',
-          src: ['jquery.bdtek.css'],
+          src: ['tiles.css'],
           dest: 'client/css'
         }]
       }
