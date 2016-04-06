@@ -1,167 +1,173 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>BD Tek</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css"/>
-	<link rel="stylesheet" href="css/jquery.bdtek.css"/>
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-	<script src="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.js"></script>
+    <meta charset="UTF-8">
+    <title>BD Tek</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css"/>
+    <link rel="stylesheet" href="css/jquery.bdtek.css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.js"></script>
     <script src="http://cdn.firebase.com/js/client/2.3.0/firebase.js"></script>
-	<script src="conf.js"></script>
-	<script>
-		var myFirebaseRef = new Firebase(myFirebaseURL);// Initialize the Firebase DB; make sure you set myFirebaseURL in conf.js
-        myFirebaseRef.onAuth(authDataCallback); 
-        var usersRef;
-        var bdRef;
-		var authData = myFirebaseRef.getAuth(); // Check authentification status
-		var myUserID = "";
-		var myUserName = "";
-		var htmlForPath = {};
-        
-        
-		function initAuthData(authData) {
-			myUserID = authData.uid;
-			myUserName = authData.google.displayName;
-			$("#listPage_header").text("Liste de " + myUserName);
+    <script src="conf.js"></script>
+    <script>
+    var myFirebaseRef = new Firebase(myFirebaseURL);// Initialize the Firebase DB; make sure you set myFirebaseURL in conf.js
+    myFirebaseRef.onAuth(authDataCallback); 
+    var usersRef;
+    var bdRef;
+    var authData = myFirebaseRef.getAuth(); // Check authentification status
+    var myUserID = "";
+    var myUserName = "";
+    var htmlForPath = {};
+
+
+    function initAuthData(authData) {
+            myUserID = authData.uid;
+            myUserName = authData.google.displayName;
+            $("#listPage_header").text("Liste de " + myUserName);
 
             usersRef = myFirebaseRef.child("users").child(authData.uid);
             usersRef.set(authData.google.displayName);
             bdRef = myFirebaseRef.child("bd").child(authData.uid);
             bdRef.orderByKey().on("value", function(snapshot) {
-                    handleDisplay(snapshot); 
-                }, function(errorObj) {
-                    console.log(errorObj.code);
-                    showMessage("Erreur de récupération des données de Firebase : " + errorObj.code);
+                console.log("on value : " + snapshot.key());
+                handleDisplay(snapshot); 
+                        }, function(errorObj) {
+                            console.log(errorObj.code);
+                            showMessage("Erreur de récupération des données de Firebase : " + errorObj.code);
+                        });
+
+    }
+    
+    function logout() {
+        myUserID = "";
+        myUserName = "";
+        myFirebaseRef.unauth();
+        location.reload();
+    }
+    
+    function authDataCallback(authData) {
+        //console.log("authDataCallback");
+        if (authData) {
+            console.log("User " + authData.uid + " is logged in with " + authData.provider);
+        } else {
+            console.log("User is logged out");
+        }
+    }
+
+    function timestamp() {
+        var date = new Date();
+        var y = date.getUTCFullYear().toString();
+        var m = (date.getUTCMonth() + 1).toString();
+        var d = date.getUTCDate().toString();
+        var h = date.getUTCHours().toString();
+        var min = date.getUTCMinutes().toString();
+        var s = date.getUTCSeconds().toString();
+
+        if(m.length < 2) { m = "0" + m; }
+        if(d.length < 2) { d = "0" + d; }
+        if(h.length < 2) { h = "0" + h; }
+        if(min.length < 2) { min = "0" + min; }
+        if(s.length < 2) { s = "0" + s}
+
+        var date = y + "-" + m + "-" + d;
+        var time = h + ":" + min + ":" + s;
+        return date + "T" + time + "Z";
+    }
+
+    function handleDisplay(snapshot) {    // add the rows to the list
+        snapshot.forEach(function(child) {
+            console.log("child : " + child.key());
+            var data = child.val();
+            var newScoreRow = $("<tr>");
+            newScoreRow.append("<td>"+child.key()+"</td>");
+            newScoreRow.append("<td id=titleFor"+data["barcode"]+ "><a href=" + data["detailsURL"] + " target='_blank'>"+data["title"]+"</a></td>");
+            newScoreRow.append($("<td id=authorFor"+data["barcode"]+ ">"+data["author"]+"</td>"));
+            newScoreRow.append($("<td id=publishedFor"+data["barcode"]+ ">"+data["published"]+"</td>"));
+            newScoreRow.append($("<td id=publisherFor"+data["barcode"]+ ">"+data["publisher"]+"</td>"));
+            newScoreRow.append($("<td id=imageFor"+data["barcode"]+ "><img src='"+data["imageURL"]+"'/></td>"));
+            newScoreRow.append($("</tr>"));
+            $("#bdTekList").append(newScoreRow);
+            htmlForPath[snapshot.key()] = newScoreRow;
+            
+        });
+      }
+
+      
+      $(document).ready( function() {
+        
+        if (!authData) { // if user is not authentified, open the auth popup
+            console.log("User is not logged in, poping up !");
+            myFirebaseRef.authWithOAuthPopup("google", function(error, authData) {
+              if (error) {
+                console.log("Login Failed!", error);
+                showMessage("Erreur d'authentification via Firebase");
+              } else {
+                initAuthData(authData);
+                console.log("Authenticated successfully with payload:", authData.uid);
+              }
+            });
+        } else {
+            console.log("Ready, initAuthData");
+            initAuthData(authData);
+        }
+
+        $("#dialog-modal").popup();
+        $('#btnImport').click(function importBarcodes() {
+            var separators = ["\n",";",","];
+            var lines = $('textarea').val().split(new RegExp(separators.join('|'), 'g')); 
+            for(var i = 0;i < lines.length;i++){
+                var ean = lines[i];
+                if (!ean) continue;
+                bdRef.child(ean).set({
+                    needLookup: 1
                 });
-
-		}
-		
-		function logout() {
-			myUserID = "";
-			myUserName = "";
-			myFirebaseRef.unauth();
-			location.reload();
-		}
-		
-		function authDataCallback(authData) {
-			if (authData) {
-				initAuthData(authData);
-				console.log("User " + authData.uid + " is logged in with " + authData.provider);
-			} else {
-				console.log("User is logged out");
-			}
-		}
-
-		function timestamp() {
-			var date = new Date();
-			var y = date.getUTCFullYear().toString();
-			var m = (date.getUTCMonth() + 1).toString();
-			var d = date.getUTCDate().toString();
-			var h = date.getUTCHours().toString();
-			var min = date.getUTCMinutes().toString();
-			var s = date.getUTCSeconds().toString();
-
-			if(m.length < 2) { m = "0" + m; }
-			if(d.length < 2) { d = "0" + d; }
-			if(h.length < 2) { h = "0" + h; }
-			if(min.length < 2) { min = "0" + min; }
-			if(s.length < 2) { s = "0" + s}
-
-			var date = y + "-" + m + "-" + d;
-			var time = h + ":" + min + ":" + s;
-			return date + "T" + time + "Z";
-		}
-	
-		function handleDisplay(snapshot) {	// add the rows to the list
-			snapshot.forEach(function(child) {
-				var data = child.val();
-				var newScoreRow = $("<tr>");
-				newScoreRow.append("<td>"+child.key()+"</td>");
-				newScoreRow.append("<td id=titleFor"+data["barcode"]+ "><a href=" + data["detailsURL"] + " target='_blank'>"+data["title"]+"</a></td>");
-				newScoreRow.append($("<td id=authorFor"+data["barcode"]+ ">"+data["author"]+"</td>"));
-				newScoreRow.append($("<td id=publishedFor"+data["barcode"]+ ">"+data["published"]+"</td>"));
-				newScoreRow.append($("<td id=publisherFor"+data["barcode"]+ ">"+data["publisher"]+"</td>"));
-				newScoreRow.append($("<td id=imageFor"+data["barcode"]+ "><img src='"+data["imageURL"]+"'/></td>"));
-				newScoreRow.append($("</tr>"));
-				$("#bdTekList").append(newScoreRow);
-				htmlForPath[snapshot.key()] = newScoreRow;
-				
-			});
-		  }
-
-		  
-		  $(document).ready( function() {
-			
-			if (!authData) { // if user is not authentified, open the auth popup
-				console.log("User is not logged in, poping up !");
-				myFirebaseRef.authWithOAuthPopup("google", function(error, authData) {
-				  if (error) {
-					console.log("Login Failed!", error);
-					showMessage("Erreur d'authentification via Firebase");
-				  } else {
-					initAuthData(authData);
-                    console.log("Authenticated successfully with payload:", authData.uid);
-				  }
-				});
-			} else {
-				initAuthData(authData);
-			}
-
-			$("#dialog-modal").popup();
-			$('#btnImport').click(function importBarcodes() {
-				var separators = ["\n",";",","];
-				var lines = $('textarea').val().split(new RegExp(separators.join('|'), 'g')); 
-				for(var i = 0;i < lines.length;i++){
-                    var ean = lines[i];
-                    if (!ean) continue;
-                    bdRef.child(ean).set({
-                        needLookup: 1
-                    });
-				}
-			});
-		});
+            }
+        });
+    });
 
 
-		function showMessage(message) {
-			$("#dialog-message").text(message);
-			$("#dialog-modal").popup("open");
-		}
+    function showMessage(message) {
+        $("#dialog-message").text(message);
+        $("#dialog-modal").popup("open");
+    }
 
-		</script>
+        </script>
 </head>
 <body>
 
 
 <!-- Start of first page -->
 <div data-role="page" id="listPage" data-theme="a">
-	<div data-role="header">
-		<h1 id="listPage_header">BDTek</h1>
+    <div data-role="header">
+        <h1 id="listPage_header">BDTek</h1>
         <a href="#importPage" data-wrapperels="span" data-mini="true" data-rel="page" data-icon="plus" data-iconpos="notext">Importer</a>
         <a href="#" onclick="logout();" data-wrapperels="span" data-mini="true" data-rel="page" data-icon="delete" data-iconpos="notext">Déconnexion</a>
-	</div><!-- /header -->
+    </div><!-- /header -->
 
-	<div data-role="popup" id="dialog-modal" class="ui-content">
-		<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
-		<p id="dialog-message"></p>
-	</div>
-	<div role="main" class="ui-content">
-		<table data-role="table" data-mini="true" class="ui-responsive" id="bdTekList">
-		  <thead>
-			<tr>
-			  <th data-priority="6">EAN</th>
-			  <th data-priority="1">Titre</th>
-			  <th data-priority="2">Auteurs</th>
-			  <th data-priority="3">Publication</th>
-			  <th data-priority="3">Editeur</th>
+    <div data-role="popup" id="dialog-modal" class="ui-content">
+        <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
+        <p id="dialog-message"></p>
+    </div>
+    <div role="main" class="ui-content">
+        <form class="ui-filterable">
+          <input id="myFilter" data-type="search">
+        </form>
+        <table data-role="table" data-mode="columntoggle" class="ui-responsive" id="bdTekList" data-filter="true" data-input="#myFilter"> 
+          <thead>
+            <tr>
+              <th data-priority="6">EAN</th>
+              <th data-priority="1">Titre</th>
+              <th data-priority="2">Auteurs</th>
+              <th data-priority="3">Publication</th>
+              <th data-priority="3">Editeur</th>
               <th data-priority="3">Image</th>
-			</tr>
-		  </thead>
-		  <tbody>
-		  </tbody>
-		</table>
-	</div><!-- /content -->
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+    </div><!-- /content -->
 
 </div><!-- /page -->
 
@@ -172,11 +178,11 @@
         <a href="#listPage" data-wrapperels="span" data-mini="true" data-rel="page" data-icon="grid" data-iconpos="notext">Retour</a>
     </header>
 
-	<div role="main" class="ui-content">
-		<label for="textarea">Textarea:</label>
-		<textarea cols="40" rows="8" name="textarea" id="textarea"></textarea>
-		<button class="ui-shadow ui-btn ui-corner-all" name="btnImport" id="btnImport">Import</button>
-	</div><!-- /content -->
+    <div role="main" class="ui-content">
+        <label for="textarea">Textarea:</label>
+        <textarea cols="40" rows="8" name="textarea" id="textarea"></textarea>
+        <button class="ui-shadow ui-btn ui-corner-all" name="btnImport" id="btnImport">Import</button>
+    </div><!-- /content -->
 
 </div><!-- /page -->
 </body>
