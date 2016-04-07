@@ -80,15 +80,7 @@
         snapshot.forEach(function(child) {
             console.log("child : " + child.key());
             var data = child.val();
-            /*var newScoreRow = $("<tr>");
-            newScoreRow.append("<td>"+child.key()+"</td>");
-            newScoreRow.append("<td id=titleFor"+data["barcode"]+ "><a href=" + data["detailsURL"] + " target='_blank'>"+data["title"]+"</a></td>");
-            newScoreRow.append($("<td id=authorFor"+data["barcode"]+ ">"+data["author"]+"</td>"));
-            newScoreRow.append($("<td id=publishedFor"+data["barcode"]+ ">"+data["published"]+"</td>"));
-            newScoreRow.append($("<td id=publisherFor"+data["barcode"]+ ">"+data["publisher"]+"</td>"));
-            newScoreRow.append($("<td id=imageFor"+data["barcode"]+ "><img src='"+data["imageURL"]+"'/></td>"));
-            newScoreRow.append($("</tr>"));*/
-            var newScoreRow = $("<li>");
+            var newScoreRow = $("<li class='ui-li-has-thumb'>");
             var newLink = $("<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='" + data["detailsURL"] + "' target='_blank'>");
             newLink.append($("<img src='"+data["imageURL"]+"' class='ui-li-thumb'/>"));
             newLink.append($("<h2>"+data["title"]+"</h2>"));
@@ -96,8 +88,7 @@
             newLink.append($("<p class='ui-li-aside'>"+data["publisher"]+"</p>"));
             newScoreRow.append(newLink);
             $("#bdTekList").append(newScoreRow);
-            htmlForPath[snapshot.key()] = newScoreRow;
-            
+            htmlForPath[snapshot.key()] = newScoreRow; 
         });
       }
 
@@ -125,7 +116,7 @@
             var separators = ["\n",";",","];
             var lines = $('textarea').val().split(new RegExp(separators.join('|'), 'g')); 
             for(var i = 0;i < lines.length;i++){
-                var ean = lines[i];
+                var ean = lines[i].trim().replace(/-/g,"");
                 if (!ean) continue;
                 bdRef.child(ean).set({
                     needLookup: 1
@@ -162,28 +153,8 @@
           <input id="myFilter" data-type="search">
         </form>
         <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-role="listview" data-inset="true" data-filter="true" data-input="#myFilter" id="bdTekList" >
-            <li><a href="#">
-            	<img src="../_assets/img/apple.png" class="ui-li-thumb">
-            	<h2>iOS 6.1</h2>
-                <p>Apple released iOS 6.1</p>
-                <p class="ui-li-aside">iOS</p>
-            </a></li>
-        
+            <!-- le contenu est ajouté dynamiquement -->
         </ul>
-        <!--table data-role="table" data-mode="columntoggle" class="ui-responsive" id="bdTekList" data-filter="true" data-input="#myFilter"> 
-          <thead>
-            <tr>
-              <th data-priority="6">EAN</th>
-              <th data-priority="1">Titre</th>
-              <th data-priority="2">Auteurs</th>
-              <th data-priority="3">Publication</th>
-              <th data-priority="3">Editeur</th>
-              <th data-priority="3">Image</th>
-            </tr>
-          </thead>
-          <tbody>
-          </tbody>
-        </table-->
     </div><!-- /content -->
 
 </div><!-- /page -->

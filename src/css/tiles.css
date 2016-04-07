@@ -51,7 +51,7 @@
 	}
 	/* Text position */
 	.my-page .ui-listview h2 {
-		font-size: 1.25em;
+		font-size: 1em;
 		margin: 0;
 		padding: .125em 1em;
 		bottom: 50%;
@@ -124,7 +124,7 @@
 	/* Set a max-width for the last breakpoint to prevent too much stretching on large screens.
 	By setting the max-width equal to the breakpoint width minus padding we keep square tiles. */
 	.my-page .ui-listview {
-		max-width: 62.5em; /* 1000px */
+		max-width: 72.5em; /* 1000px */
 		margin: 0 auto;
 	}
 	/* Because of the 1000px max-width the width will always be 230px (and margin left/right 10px),
