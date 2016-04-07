@@ -3,5 +3,6 @@
     "AWSSecretKey"      : "xXxXxXxX",
     "AssociateTag"      : "xxx",
     "myFirebaseURL"     : "https://blazing-fire-xxx.firebaseio.com/bd",
-    "myFirebaseSecret"  : "xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    "myFirebaseSecret"  : "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "allowedGoogleIds"  : ["google:xxxxxxxxxxxxxxxxxxxxxxx","google:xxxxxxxxxxxxxxxxxxxxxxx"]
 }

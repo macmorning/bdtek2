@@ -51,13 +51,13 @@
 	}
 	/* Text position */
 	.my-page .ui-listview h2 {
-		font-size: 1em;
+		font-size: 0.95em;
 		margin: 0;
 		padding: .125em 1em;
 		bottom: 50%;
 	}
 	.my-page .ui-listview p {
-		font-size: 1em;
+		font-size: 0.9em;
 		margin: 0;
 		padding: 0 1.25em;
 		min-height: 50%;
@@ -124,7 +124,7 @@
 	/* Set a max-width for the last breakpoint to prevent too much stretching on large screens.
 	By setting the max-width equal to the breakpoint width minus padding we keep square tiles. */
 	.my-page .ui-listview {
-		max-width: 72.5em; /* 1000px */
+		max-width: 62.5em; /* 1000px */
 		margin: 0 auto;
 	}
 	/* Because of the 1000px max-width the width will always be 230px (and margin left/right 10px),
@@ -136,4 +136,23 @@
 	}
 }
 
+/* Third breakpoint is 87.5em (1400px). 5 column layout. Tiles will be 250x250 pixels incl. margin again at the breakpoint. */
+@media ( min-width: 87.5em ) {
+	.my-page .ui-content {
+		padding: .625em; /* 10px */
+	}
+	/* Set a max-width for the last breakpoint to prevent too much stretching on large screens.
+	By setting the max-width equal to the breakpoint width minus padding we keep square tiles. */
+	.my-page .ui-listview {
+		max-width: 85.5em; /* 1000px */
+		margin: 0 auto;
+	}
+	/* Because of the 1000px max-width the width will always be 230px (and margin left/right 10px),
+	but we stick to percentage values for demo purposes. */
+	.my-page .ui-listview li {
+		width: 18%;
+		height: 230px;
+		margin: .625em 1%;
+	}
+}
 /* For this demo we used images with a size of 310x310 pixels. Just before the second breakpoint the images reach their max width: 1019px - 2 x 9px padding = 1001px x 30.9333% = ~310px */

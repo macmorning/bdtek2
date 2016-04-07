@@ -1,16 +1,65 @@
+//////////////////////////////////////////////////
+//                                              //
+//      BdTek nodejs server                     //
+//  http://www.github.com/macmorning/bdtek2     //
+//                                              //
+//////////////////////////////////////////////////
+/*
+ * Copyright (c) 2016 Sylvain YVON
+ * 
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE. 
+ */
+
 var PORT = process.env.PORT || 8080;
 var ADDRESS = process.env.IP;
 var SERVERDIR = "";
 
-var express = require('express'),
-    path = require('path'),
+var http = require('http'),
+    url = require('url'),
     fs = require('fs'),
+    util = require('util'),
     Firebase = require('firebase'),
-    bodyParser = require('body-parser'),
     amazon = require('amazon-product-api');
+    
 var configFile = SERVERDIR + 'config.json';
 var myFirebaseRef;
 var myAmazonClient;
+var LOGFIREBA = false;
+var LOGAMAZON = false;
+var LOGSTATIC = false;
+
+function escapeHtml(unsafe) {
+    if(unsafe && isNaN(unsafe)) {// escapes Html characters
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    } else if (!isNaN(unsafe)) {
+        return unsafe;
+    }
+    return false;
+}
 
 function currTime() {
     // write current time in HH:mm format
@@ -59,7 +108,7 @@ function lookup(snapshot) {
       responseGroup: 'ItemAttributes,Images'
     }).then(function(results) {
       var dataRef = snapshot.ref();
-      console.log(currTime() + " [LOOKUP] ... Found details for " + snapshot.key() + " : " + results[0].ItemAttributes[0].Title[0]);
+      if (LOGAMAZON) console.log(currTime() + " [LOOKUP] ... Found details for " + snapshot.key() + " : " + results[0].ItemAttributes[0].Title[0]);
       dataRef.update({
             title: results[0].ItemAttributes[0].Title[0],
             author: results[0].ItemAttributes[0].Author,
@@ -70,7 +119,7 @@ function lookup(snapshot) {
             needLookup: 0
       });
     }).catch(function(err) {
-      console.log(JSON.stringify(err));
+      console.log(currTime() + " [LOOKUP] ... Error : " + JSON.stringify(err));
     });
 }
 
@@ -84,18 +133,18 @@ function initFirebase(url,secret) {
             console.log(currTime() + " [CONFIG] ... Firebase authentication succeeded");
             myFirebaseRef.on('child_added', function(userSnapshot) {
                 var userKey = userSnapshot.key();
-                console.log(currTime() + " [FIREDB] ... User ref - " + userKey);
+                if (LOGFIREBA) console.log(currTime() + " [FIREDB] ... User ref - " + userKey);
                 var thisUserRef = new Firebase(url + "/" + userKey, secret);
                 thisUserRef.on("child_changed", function (snapshot) {
                     var data = snapshot.val();
-                    console.log(currTime() + " [FIREDB] ... Child changed " + snapshot.key() + " - needLookup : " + data.needLookup);
+                    if (LOGFIREBA) console.log(currTime() + " [FIREDB] ... Child changed " + snapshot.key() + " - needLookup : " + data.needLookup);
                     if (data.needLookup) {
                         lookup(snapshot);
                     }
                 });
                 thisUserRef.on("child_added", function (snapshot) {
                     var data = snapshot.val();
-                    console.log(currTime() + " [FIREDB] ... Child added " + snapshot.key() + " - needLookup : " + data.needLookup);
+                    if (LOGFIREBA) console.log(currTime() + " [FIREDB] ... Child added " + snapshot.key() + " - needLookup : " + data.needLookup);
                     if (data.needLookup) {
                         lookup(snapshot);
                     }
@@ -166,15 +215,74 @@ function logout() {
 
 
 loadConfig();
-//create the app instance
-var app = express();
-//serve static files
-app.use(express.static(path.join(__dirname, 'client')));
-//parse POST data
-app.use(bodyParser.urlencoded({ extended: false }));
-/*
-app.get('/data', function(req, res){
-    res.send([{ name:"Test 1" }, { name:"Test 2" }]);
-});
-*/
-app.listen(PORT);
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//
+//                              Create http server
+//
+//////////////////////////////////////////////////////////////////////////////////////////
+
+http.createServer(function (req, res) {
+   
+//
+// ROUTING
+//
+   var url_parts = url.parse(req.url);
+   //console.log(url_parts);
+
+    // file serving
+    // thanks http://blog.phyber.com/2012/03/30/supporting-cache-controls-in-node-js/ for the cache control tips
+    if(LOGSTATIC) { console.log(currTime() + ' [STATIC] client file request'); }
+    var file='';
+    if(url_parts.pathname === '/' || url_parts.pathname === '/client' || url_parts.pathname === '/client/') {
+        file = 'index.html';
+    }  else if(url_parts.pathname.substr(0, 8) === '/favicon') {
+        // serving the favicon
+        file = 'img/favicon.ico';
+    }  else {
+        if(url_parts.pathname.substr(0,7) === "/client") {   // remove the potential "/client" reference
+            file = escapeHtml(url_parts.pathname.substr(8)); 
+        } else {
+            file = escapeHtml(url_parts.pathname); 
+        }
+    }
+    if(LOGSTATIC) { console.log(currTime() + ' [STATIC] ... serving client/' + file); }
+    fs.readFile(SERVERDIR+'client/'+file, function(err, data) {
+        if(err) {
+            console.log(currTime() + ' [STATIC] ... ' + err);
+            if(err.code === "ENOENT") {      // file is simply missing
+                resNotFound(res,'file not found',err);
+            } else {                        // other error; could be EACCES or anything
+                resInternalError(res,'internal server error',err);
+            }
+        }
+        else {
+            fs.stat(SERVERDIR+'client/'+file, function (err, stat) {
+                if (err) {
+                    resInternalError(res,'internal server error',err);
+                }
+                else {
+                    var etag = stat.size + '-' + Date.parse(stat.mtime);
+                    res.setHeader('Last-Modified', stat.mtime);
+                    if(LOGSTATIC) { console.log(currTime() + ' [STATIC] ... etag : ' + etag); }
+                    if(LOGSTATIC) { console.log(currTime() + ' [STATIC] ... req.if-none-match : ' + req.headers['if-none-match']); }
+                    if(LOGSTATIC) { console.log(req.headers); }
+
+                    if (req.headers['if-none-match'] === etag) {
+                        res.statusCode = 304;
+                        res.end();
+                    }
+                    else {
+                        res.setHeader('Content-Length', data.length);
+                        res.setHeader('Cache-Control', 'public, max-age=600');
+                        res.setHeader('ETag', etag);
+                        res.statusCode = 200;
+                        res.end(data);
+                    }
+                }
+            });
+        }
+    });
+
+}).listen(PORT,ADDRESS);
+console.log(currTime() + ' [START ] Server running on port ' + PORT);   
