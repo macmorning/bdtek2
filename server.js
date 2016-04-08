@@ -38,12 +38,13 @@ var http = require('http'),
     fs = require('fs'),
     util = require('util'),
     Firebase = require('firebase'),
+    FirebaseTokenGenerator = require('firebase-token-generator'),
     amazon = require('amazon-product-api');
     
 var configFile = SERVERDIR + 'config.json';
 var myFirebaseRef;
 var myAmazonClient;
-var LOGFIREBA = false;
+var LOGFIREBA = true;
 var LOGAMAZON = false;
 var LOGSTATIC = false;
 
@@ -108,7 +109,7 @@ function lookup(snapshot) {
       responseGroup: 'ItemAttributes,Images'
     }).then(function(results) {
       var dataRef = snapshot.ref();
-      if (LOGAMAZON) console.log(currTime() + " [LOOKUP] ... Found details for " + snapshot.key() + " : " + results[0].ItemAttributes[0].Title[0]);
+      if (LOGAMAZON) { console.log(currTime() + " [LOOKUP] ... Found details for " + snapshot.key() + " : " + results[0].ItemAttributes[0].Title[0]); }
       dataRef.update({
             title: results[0].ItemAttributes[0].Title[0],
             author: results[0].ItemAttributes[0].Author,
@@ -126,32 +127,34 @@ function lookup(snapshot) {
 function initFirebase(url,secret) {
     console.log(currTime() + ' [CONFIG] ... connecting to Firebase instance ' + url);
     myFirebaseRef = new Firebase(url);
-     myFirebaseRef.authWithCustomToken(secret,function(error, authData) {
+    var tokenGenerator = new FirebaseTokenGenerator(secret);
+    var token = tokenGenerator.createToken({ uid: "node_server"});
+    myFirebaseRef.authWithCustomToken(token,function(error, authData) {
           if (error) {
             console.log(currTime() + " [CONFIG] ... Firebase authentication failed!", error);
           } else {
-            console.log(currTime() + " [CONFIG] ... Firebase authentication succeeded");
+            console.log(currTime() + " [CONFIG] ... Firebase authentication succeeded, authData : " + JSON.stringify(authData));
             myFirebaseRef.on('child_added', function(userSnapshot) {
                 var userKey = userSnapshot.key();
-                if (LOGFIREBA) console.log(currTime() + " [FIREDB] ... User ref - " + userKey);
+                if (LOGFIREBA) { console.log(currTime() + " [FIREDB] ... User ref - " + userKey); }
                 var thisUserRef = new Firebase(url + "/" + userKey, secret);
                 thisUserRef.on("child_changed", function (snapshot) {
                     var data = snapshot.val();
-                    if (LOGFIREBA) console.log(currTime() + " [FIREDB] ... Child changed " + snapshot.key() + " - needLookup : " + data.needLookup);
+                    if (LOGFIREBA) { console.log(currTime() + " [FIREDB] ... Child changed " + snapshot.key() + " - needLookup : " + data.needLookup); }
                     if (data.needLookup) {
                         lookup(snapshot);
                     }
                 });
                 thisUserRef.on("child_added", function (snapshot) {
                     var data = snapshot.val();
-                    if (LOGFIREBA) console.log(currTime() + " [FIREDB] ... Child added " + snapshot.key() + " - needLookup : " + data.needLookup);
+                    if (LOGFIREBA) { console.log(currTime() + " [FIREDB] ... Child added " + snapshot.key() + " - needLookup : " + data.needLookup); }
                     if (data.needLookup) {
                         lookup(snapshot);
                     }
                 });
             });
           }
-    });
+    }, { admin: true });
     return true;
 }
 
