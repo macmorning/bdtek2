@@ -69,26 +69,6 @@
         }
     }
 
-    function timestamp() {
-        var date = new Date();
-        var y = date.getUTCFullYear().toString();
-        var m = (date.getUTCMonth() + 1).toString();
-        var d = date.getUTCDate().toString();
-        var h = date.getUTCHours().toString();
-        var min = date.getUTCMinutes().toString();
-        var s = date.getUTCSeconds().toString();
-
-        if(m.length < 2) { m = "0" + m; }
-        if(d.length < 2) { d = "0" + d; }
-        if(h.length < 2) { h = "0" + h; }
-        if(min.length < 2) { min = "0" + min; }
-        if(s.length < 2) { s = "0" + s}
-
-        var date = y + "-" + m + "-" + d;
-        var time = h + ":" + min + ":" + s;
-        return date + "T" + time + "Z";
-    }
-
     function handleDisplay(snapshot) {    // add the rows to the list
             var data = snapshot.val();
             var newScoreRow = $("<li id='" + snapshot.key() + "' class='ui-li-has-thumb'>");
@@ -123,7 +103,7 @@
 
         $("#dialog-modal").popup();
         $('#btnImport').click(function importBarcodes() {
-            var separators = ["\n",";",","];
+            var separators = ["\n",";",","," "];
             var lines = $('textarea').val().split(new RegExp(separators.join('|'), 'g')); 
             for(var i = 0;i < lines.length;i++){
                 var ean = lines[i].trim().replace(/-/g,"");
@@ -132,6 +112,7 @@
                     needLookup: 1
                 });
             }
+            $.mobile.changePage( "#importPage", { transition: "slideup", changeHash: false });
         });
     });
 
@@ -150,13 +131,42 @@
 <div data-role="page" class="my-page" id="listPage" data-theme="b">
     <div data-role="header">
         <h1 id="listPage_header">BDTek</h1>
-        <a href="#importPage" data-wrapperels="span" data-mini="true" data-rel="page" data-icon="plus" data-iconpos="notext">Importer</a>
-        <a href="#" onclick="logout();" data-wrapperels="span" data-mini="true" data-rel="page" data-icon="delete" data-iconpos="notext">Déconnexion</a>
+        <div class="ui-btn-left">
+            <a href="#importPage" data-role="button" data-rel="popup" data-position-to="window" data-wrapperels="span" data-mini="true" data-icon="plus" data-iconpos="notext">Importer</a>
+            <a href="#configPage" data-role="button" data-rel="popup" data-position-to="window" data-wrapperels="span" data-mini="true" data-icon="gear" data-iconpos="notext">Préférences</a>
+        </div>
+        <div class="ui-btn-right">
+            <a href="#" onclick="logout();" data-role="button" data-wrapperels="span" data-mini="true" data-rel="page" data-icon="delete" data-iconpos="notext">Déconnexion</a>
+        </div>
     </div><!-- /header -->
 
     <div data-role="popup" id="dialog-modal" class="ui-content">
         <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
         <p id="dialog-message"></p>
+    </div>
+
+    <div data-role="popup" id="importPage" class="ui-content">
+            <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
+            <div data-role="header" class="ui-header ui-bar-c">
+                 <h1>Saisir une liste d'EAN à importer</h1>
+            </div>
+            <div role="main" class="ui-content">
+                <label for="textarea">Saisir une liste d&quot;EAN :</label>
+                <textarea cols="40" rows="8" name="textarea" id="textarea"></textarea>
+                <button class="ui-shadow ui-btn ui-corner-all" name="btnImport" id="btnImport">Import</button>
+            </div><!-- /content -->
+    </div>
+
+    <div data-role="popup" id="configPage" class="ui-content">
+            <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
+            <div data-role="header" class="ui-header ui-bar-c">
+                 <h1>Pr&eacute;f&eacute;rences</h1>
+            </div>
+            <div role="main" class="ui-content">
+                <label for="textarea">Alias du compte (sans espace) :</label>
+                <input id="alias"></input>
+                <button class="ui-shadow ui-btn ui-corner-all" name="btnSave" id="btnSave">Enregistrer</button>
+            </div><!-- /content -->
     </div>
     <div role="main" class="ui-content">
         <form class="ui-filterable">
@@ -169,19 +179,5 @@
 
 </div><!-- /page -->
 
-<!-- Start of second page -->
-<div data-role="page" id="importPage" data-theme="b">
-    <header data-role="header">
-        <h1 id="importPage_header">Importer des BD</h1>
-        <a href="#listPage" data-wrapperels="span" data-mini="true" data-rel="page" data-icon="grid" data-iconpos="notext">Retour</a>
-    </header>
-
-    <div role="main" class="ui-content">
-        <label for="textarea">Textarea:</label>
-        <textarea cols="40" rows="8" name="textarea" id="textarea"></textarea>
-        <button class="ui-shadow ui-btn ui-corner-all" name="btnImport" id="btnImport">Import</button>
-    </div><!-- /content -->
-
-</div><!-- /page -->
 </body>
 </html>
