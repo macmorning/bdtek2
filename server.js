@@ -38,7 +38,6 @@ var http = require('http'),
     fs = require('fs'),
     util = require('util'),
     Firebase = require('firebase'),
-    FirebaseTokenGenerator = require('firebase-token-generator'),
     amazon = require('amazon-product-api');
     
 var configFile = SERVERDIR + 'config.json';
@@ -127,9 +126,7 @@ function lookup(snapshot) {
 function initFirebase(url,secret) {
     console.log(currTime() + ' [CONFIG] ... connecting to Firebase instance ' + url);
     myFirebaseRef = new Firebase(url);
-    var tokenGenerator = new FirebaseTokenGenerator(secret);
-    var token = tokenGenerator.createToken({ uid: "node_server"});
-    myFirebaseRef.authWithCustomToken(token,function(error, authData) {
+    myFirebaseRef.authWithCustomToken(secret,function(error, authData) {
           if (error) {
             console.log(currTime() + " [CONFIG] ... Firebase authentication failed!", error);
           } else {
@@ -154,7 +151,7 @@ function initFirebase(url,secret) {
                 });
             });
           }
-    }, { admin: true });
+    },{admin:true});
     return true;
 }
 
@@ -212,7 +209,6 @@ function loadConfig() {
 
 
 function logout() {
-    myFirebaseRef.unauth();
     location.reload();
 }
 

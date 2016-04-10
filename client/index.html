@@ -29,14 +29,27 @@
             usersRef = myFirebaseRef.child("users").child(authData.uid);
             usersRef.set(authData.google.displayName);
             bdRef = myFirebaseRef.child("bd").child(authData.uid);
-            bdRef.orderByKey().on("value", function(snapshot) {
-                console.log("on value : " + snapshot.key());
+            bdRef.orderByKey();
+            bdRef.on("child_removed", function(snapshot) {
+                $('li#' + snapshot.key()).remove();
+            });
+            bdRef.on("child_added", function(snapshot) {
+                console.log("child added" + snapshot.key());
                 handleDisplay(snapshot); 
                         }, function(errorObj) {
                             console.log(errorObj.code);
                             showMessage("Erreur de récupération des données de Firebase : " + errorObj.code);
-                        });
-
+                        }
+            );
+            bdRef.on("child_changed", function(snapshot) {
+                console.log("child changed" + snapshot.key());
+                $('li#' + snapshot.key()).remove();
+                handleDisplay(snapshot); 
+                        }, function(errorObj) {
+                            console.log(errorObj.code);
+                            showMessage("Erreur de récupération des données de Firebase : " + errorObj.code);
+                        }
+            );
     }
     
     function logout() {
@@ -77,10 +90,8 @@
     }
 
     function handleDisplay(snapshot) {    // add the rows to the list
-        snapshot.forEach(function(child) {
-            console.log("child : " + child.key());
-            var data = child.val();
-            var newScoreRow = $("<li class='ui-li-has-thumb'>");
+            var data = snapshot.val();
+            var newScoreRow = $("<li id='" + snapshot.key() + "' class='ui-li-has-thumb'>");
             var newLink = $("<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='" + data["detailsURL"] + "' target='_blank'>");
             newLink.append($("<img src='"+data["imageURL"]+"' class='ui-li-thumb'/>"));
             newLink.append($("<h2>"+data["title"]+"</h2>"));
@@ -89,7 +100,6 @@
             newScoreRow.append(newLink);
             $("#bdTekList").append(newScoreRow);
             htmlForPath[snapshot.key()] = newScoreRow; 
-        });
       }
 
       
