@@ -131,10 +131,11 @@ function initFirebase(url,secret) {
             console.log(currTime() + " [CONFIG] ... Firebase authentication failed!", error);
           } else {
             console.log(currTime() + " [CONFIG] ... Firebase authentication succeeded, authData : " + JSON.stringify(authData));
-            myFirebaseRef.on('child_added', function(userSnapshot) {
+            var bdRef = myFirebaseRef.child("bd");
+            bdRef.on('child_added', function(userSnapshot) {
                 var userKey = userSnapshot.key();
                 if (LOGFIREBA) { console.log(currTime() + " [FIREDB] ... User ref - " + userKey); }
-                var thisUserRef = new Firebase(url + "/" + userKey, secret);
+                var thisUserRef = bdRef.child(userKey);
                 thisUserRef.on("child_changed", function (snapshot) {
                     var data = snapshot.val();
                     if (LOGFIREBA) { console.log(currTime() + " [FIREDB] ... Child changed " + snapshot.key() + " - needLookup : " + data.needLookup); }
