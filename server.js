@@ -44,6 +44,7 @@ var configFile = SERVERDIR + 'config.json';
 var myFirebaseRef;
 var myAmazonClient;
 var LOGFIREBA = true;
+var LOGREST = true;
 var LOGAMAZON = false;
 var LOGSTATIC = false;
 
@@ -156,6 +157,24 @@ function initFirebase(url,secret) {
     return true;
 }
 
+function addProduct(alias,ean) {
+    var userRef = myFirebaseRef.child("users");
+    userRef.once('value',function(snap) {
+        if(snap.val()) {
+            snap.forEach(function(snapchild) {
+                if(snapchild.val()['alias']==alias) {
+                    console.log(snapchild.key());
+                    var bdRef = myFirebaseRef.child("bd").child(snapchild.key());
+                    bdRef.child(ean.trim().replace(/-/g,"")).set({
+                        needLookup: 1
+                    });
+                    return true;
+                }
+            });
+        }
+        return false;
+    });
+}
 
 function initAmazonClient(keyid,secret,tag) {
     console.log(currTime() + ' [CONFIG] ... Amazon client initializing with key - ' + keyid);
@@ -228,61 +247,83 @@ http.createServer(function (req, res) {
 // ROUTING
 //
    var url_parts = url.parse(req.url);
-   //console.log(url_parts);
 
+    // REST services
+    if(url_parts.pathname.substr(0, 5) === '/rest') {
+        // expected :    /rest/<alias>/push/<ean>
+        var request = url_parts.pathname.split("/");
+        var action = escapeHtml(request[3]);
+        var alias = escapeHtml(request[2]);
+        var ean = escapeHtml(request[4]);
+        if(LOGREST) { console.log(currTime() + ' [LOGREST ] Service called : ' + action + ' for ' + alias + ', ean : ' + ean); }
+        if(action === "push") {
+            if(alias && ean) {
+                if(addProduct(alias, ean)) {
+                    res.statusCode = 200;
+                    res.end("item added");
+                } else {
+                    resInternalError(res,"error");
+                }
+            } 
+        }
+        resBadRequest(res,"bad request");
+    }
+   
     // file serving
     // thanks http://blog.phyber.com/2012/03/30/supporting-cache-controls-in-node-js/ for the cache control tips
-    if(LOGSTATIC) { console.log(currTime() + ' [STATIC] client file request'); }
-    var file='';
-    if(url_parts.pathname === '/' || url_parts.pathname === '/client' || url_parts.pathname === '/client/') {
-        file = 'index.html';
-    }  else if(url_parts.pathname.substr(0, 8) === '/favicon') {
-        // serving the favicon
-        file = 'img/favicon.ico';
-    }  else {
-        if(url_parts.pathname.substr(0,7) === "/client") {   // remove the potential "/client" reference
-            file = escapeHtml(url_parts.pathname.substr(8)); 
-        } else {
-            file = escapeHtml(url_parts.pathname); 
-        }
-    }
-    if(LOGSTATIC) { console.log(currTime() + ' [STATIC] ... serving client/' + file); }
-    fs.readFile(SERVERDIR+'client/'+file, function(err, data) {
-        if(err) {
-            console.log(currTime() + ' [STATIC] ... ' + err);
-            if(err.code === "ENOENT") {      // file is simply missing
-                resNotFound(res,'file not found',err);
-            } else {                        // other error; could be EACCES or anything
-                resInternalError(res,'internal server error',err);
+   
+    else {
+        if(LOGSTATIC) { console.log(currTime() + ' [STATIC] client file request'); }
+        var file='';
+        if(url_parts.pathname === '/' || url_parts.pathname === '/client' || url_parts.pathname === '/client/') {
+            file = 'index.html';
+        }  else if(url_parts.pathname.substr(0, 8) === '/favicon') {
+            // serving the favicon
+            file = 'img/favicon.ico';
+        }  else {
+            if(url_parts.pathname.substr(0,7) === "/client") {   // remove the potential "/client" reference
+                file = escapeHtml(url_parts.pathname.substr(8)); 
+            } else {
+                file = escapeHtml(url_parts.pathname); 
             }
         }
-        else {
-            fs.stat(SERVERDIR+'client/'+file, function (err, stat) {
-                if (err) {
+        if(LOGSTATIC) { console.log(currTime() + ' [STATIC] ... serving client/' + file); }
+        fs.readFile(SERVERDIR+'client/'+file, function(err, data) {
+            if(err) {
+                console.log(currTime() + ' [STATIC] ... ' + err);
+                if(err.code === "ENOENT") {      // file is simply missing
+                    resNotFound(res,'file not found',err);
+                } else {                        // other error; could be EACCES or anything
                     resInternalError(res,'internal server error',err);
                 }
-                else {
-                    var etag = stat.size + '-' + Date.parse(stat.mtime);
-                    res.setHeader('Last-Modified', stat.mtime);
-                    if(LOGSTATIC) { console.log(currTime() + ' [STATIC] ... etag : ' + etag); }
-                    if(LOGSTATIC) { console.log(currTime() + ' [STATIC] ... req.if-none-match : ' + req.headers['if-none-match']); }
-                    if(LOGSTATIC) { console.log(req.headers); }
-
-                    if (req.headers['if-none-match'] === etag) {
-                        res.statusCode = 304;
-                        res.end();
+            }
+            else {
+                fs.stat(SERVERDIR+'client/'+file, function (err, stat) {
+                    if (err) {
+                        resInternalError(res,'internal server error',err);
                     }
                     else {
-                        res.setHeader('Content-Length', data.length);
-                        res.setHeader('Cache-Control', 'public, max-age=600');
-                        res.setHeader('ETag', etag);
-                        res.statusCode = 200;
-                        res.end(data);
-                    }
-                }
-            });
-        }
-    });
+                        var etag = stat.size + '-' + Date.parse(stat.mtime);
+                        res.setHeader('Last-Modified', stat.mtime);
+                        if(LOGSTATIC) { console.log(currTime() + ' [STATIC] ... etag : ' + etag); }
+                        if(LOGSTATIC) { console.log(currTime() + ' [STATIC] ... req.if-none-match : ' + req.headers['if-none-match']); }
+                        if(LOGSTATIC) { console.log(req.headers); }
 
+                        if (req.headers['if-none-match'] === etag) {
+                            res.statusCode = 304;
+                            res.end();
+                        }
+                        else {
+                            res.setHeader('Content-Length', data.length);
+                            res.setHeader('Cache-Control', 'public, max-age=600');
+                            res.setHeader('ETag', etag);
+                            res.statusCode = 200;
+                            res.end(data);
+                        }
+                    }
+                });
+            }
+        });
+    }
 }).listen(PORT,ADDRESS);
 console.log(currTime() + ' [START ] Server running on port ' + PORT);   
