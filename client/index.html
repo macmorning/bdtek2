@@ -82,8 +82,8 @@
 
     function popContextualMenu(snapshot) {
         var data = snapshot.val();
-        $("#contextualMenu_Name").text(data['title']);
-        $("#contextualMenu_Link").attr('href',data['detailsURL']);
+        $("#contextualMenu_Name").text(data['title']==null ? snapshot.key():data['title']);
+        $("#contextualMenu_Link").attr('href',(data['detailsURL']==null ? '#':data['detailsURL']));
         $("#contextualMenu_Remove").attr('onclick',"deleteChild('" + snapshot.key() + "'); $('#contextualMenu').popup('close');");
         $("#contextualMenu").popup("open");
     }
@@ -102,9 +102,6 @@
                 newLink.append($("<p>"+(data["author"]==null ? "inconnu":data["author"])+"</p>"));
                 newLink.append($("<p class='ui-li-aside'>"+(data["publisher"]==null ? "?":data["publisher"])+"</p>"));
                 newScoreRow.append(newLink);
-                newScoreRow.bind("click",function(event){
-                    popContextualMenu(snapshot);
-                });
             } else {
                 var newLink = $("<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='#' target='_blank'>");
                 newLink.append($("<h2>"+snapshot.key()+"</h2>"));
@@ -112,6 +109,9 @@
                 newScoreRow.append(newLink);
             }
             $("#bdTekList").append(newScoreRow);
+            newScoreRow.bind("click",function(event){
+                popContextualMenu(snapshot);
+            });
 
             htmlForPath[snapshot.key()] = newScoreRow; 
       }
