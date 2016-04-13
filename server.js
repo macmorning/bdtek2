@@ -162,18 +162,17 @@ function addProduct(alias,ean) {
     userRef.once('value',function(snap) {
         if(snap.val()) {
             snap.forEach(function(snapchild) {
-                if(snapchild.val()['alias']==alias) {
+                if(snapchild.val()['alias']===alias) {
                     console.log(snapchild.key());
                     var bdRef = myFirebaseRef.child("bd").child(snapchild.key());
                     bdRef.child(ean.trim().replace(/-/g,"")).set({
                         needLookup: 1
                     });
-                    return true;
                 }
             });
         }
-        return false;
     });
+    return true;
 }
 
 function initAmazonClient(keyid,secret,tag) {
@@ -250,7 +249,7 @@ http.createServer(function (req, res) {
 
     // REST services
     if(url_parts.pathname.substr(0, 5) === '/rest') {
-        // expected :    /rest/<alias>/push/<ean>
+        // expected :    /rest/<alias>/<action>/<ean>
         var request = url_parts.pathname.split("/");
         var action = escapeHtml(request[3]);
         var alias = escapeHtml(request[2]);
@@ -261,12 +260,13 @@ http.createServer(function (req, res) {
                 if(addProduct(alias, ean)) {
                     res.statusCode = 200;
                     res.end("item added");
+                    return true;
                 } else {
-                    resInternalError(res,"error");
+                    return resInternalError(res,"error");
                 }
             } 
         }
-        resBadRequest(res,"bad request");
+        return resBadRequest(res,"bad request");
     }
    
     // file serving

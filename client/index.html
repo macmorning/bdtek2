@@ -80,16 +80,31 @@
         }
     }
 
+    function popContextualMenu(snapshot) {
+        var data = snapshot.val();
+        $("#contextualMenu_Name").text(data['title']);
+        $("#contextualMenu_Link").attr('href',data['detailsURL']);
+        $("#contextualMenu_Remove").attr('onclick',"deleteChild('" + snapshot.key() + "'); $('#contextualMenu').popup('close');");
+        $("#contextualMenu").popup("open");
+    }
+    
+    function deleteChild(key) {
+            myFirebaseRef.child("bd").child(myUserID).child(key).remove();
+    }
+    
     function handleDisplay(snapshot) {    // add the rows to the list
             var data = snapshot.val();
             var newScoreRow = $("<li id='" + snapshot.key() + "' class='ui-li-has-thumb'>");
             if(data["needLookup"]==0) {
-                var newLink = $("<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='" + data["detailsURL"] + "' target='_blank'>");
+                var newLink = $("<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='#'>");
                 newLink.append($("<img src='"+(data["imageURL"]==null ? "":data["imageURL"])+"' class='ui-li-thumb'/>"));
                 newLink.append($("<h2>"+(data["title"]==null ? snapshot.key():data["title"])+"</h2>"));
                 newLink.append($("<p>"+(data["author"]==null ? "inconnu":data["author"])+"</p>"));
                 newLink.append($("<p class='ui-li-aside'>"+(data["publisher"]==null ? "?":data["publisher"])+"</p>"));
                 newScoreRow.append(newLink);
+                newScoreRow.bind("click",function(event){
+                    popContextualMenu(snapshot);
+                });
             } else {
                 var newLink = $("<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='#' target='_blank'>");
                 newLink.append($("<h2>"+snapshot.key()+"</h2>"));
@@ -97,6 +112,7 @@
                 newScoreRow.append(newLink);
             }
             $("#bdTekList").append(newScoreRow);
+
             htmlForPath[snapshot.key()] = newScoreRow; 
       }
 
@@ -166,6 +182,14 @@
     <div data-role="popup" id="dialog-modal" class="ui-content">
         <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
         <p id="dialog-message"></p>
+    </div>
+
+    <div data-role="popup" id="contextualMenu" class="ui-content">
+            <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
+            <p style="align:center;"><h3 id="contextualMenu_Name"></h3></p>
+            <a data-role="button" data-icon="navigation" id="contextualMenu_Link" target="_new" href="">Voir sur Amazon</a>
+            <a data-role="button" data-icon="delete" id="contextualMenu_Remove" href="">Supprimer</a>
+            <input type='hidden' id="contextualMenu_EAN"></input>
     </div>
 
     <div data-role="popup" id="importPage" class="ui-content">
