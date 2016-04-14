@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>BD Tek</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css"/>
+    <link rel="stylesheet" href="css/tiles.css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.js"></script>
+    <script src="http://cdn.firebase.com/js/client/2.3.0/firebase.js"></script>
+    <script src="conf.js"></script>
+    <script>
+
+    function parse(val) {
+        var result = "Not found",
+            tmp = [];
+        location.search
+        //.replace ( "?", "" ) 
+        // this is better, there might be a question mark inside
+        .substr(1)
+            .split("&")
+            .forEach(function (item) {
+            tmp = item.split("=");
+            if (tmp[0] === val) result = decodeURIComponent(tmp[1]);
+        });
+        return result.toString().trim();
+    }
+        
+    function popContextualMenu(snapshot) {
+        var data = snapshot.val();
+        $("#contextualMenu_Name").text(data['title']==null ? snapshot.key():data['title']);
+        $("#contextualMenu_Link").attr('href',(data['detailsURL']==null ? '#':data['detailsURL']));
+        $("#contextualMenu").popup("open");
+    }
+    
+    function handleDisplay(snapshot) {    // add the rows to the list
+            var data = snapshot.val();
+            var newScoreRow = $("<li id='" + snapshot.key() + "' class='ui-li-has-thumb'>");
+            if(data["needLookup"]==0) {
+                var newLink = $("<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='#'>");
+                newLink.append($("<img src='"+(data["imageURL"]==null ? "":data["imageURL"])+"' class='ui-li-thumb'/>"));
+                newLink.append($("<h2>"+(data["title"]==null ? snapshot.key():data["title"])+"</h2>"));
+                newLink.append($("<p>"+(data["author"]==null ? "inconnu":data["author"])+"</p>"));
+                newLink.append($("<p class='ui-li-aside'>"+(data["publisher"]==null ? "?":data["publisher"])+"</p>"));
+                newScoreRow.append(newLink);
+            } else {
+                var newLink = $("<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='#' target='_blank'>");
+                newLink.append($("<h2>"+snapshot.key()+"</h2>"));
+                newLink.append($("<p>en attente</p>"));
+                newScoreRow.append(newLink);
+            }
+            $("#bdTekList").append(newScoreRow);
+            newScoreRow.bind("click",function(event){
+                popContextualMenu(snapshot);
+            });
+
+            htmlForPath[snapshot.key()] = newScoreRow; 
+      }
+
+      
+    $(document).ready( function() {
+        var userAlias = parse("alias");
+        $("#listPage_header").text("Liste de " + userAlias);
+        var myFirebaseRef = new Firebase(myFirebaseURL);// Initialize the Firebase DB; make sure you set myFirebaseURL in conf.js
+
+        var userRef = myFirebaseRef.child("users");
+        userRef.once('value',function(snap) {
+            if(snap.val()) {
+                snap.forEach(function(snapchild) {
+                    var data = snapchild.val();
+                    if(data['alias']==userAlias) {
+                        console.log(userAlias + " trouvé, key = " + snapchild.key());
+                        bdRef = myFirebaseRef.child("bd").child(snapchild.key());
+                        bdRef.orderByKey();
+                        bdRef.on("child_removed", function(snapshot) {
+                            $('li#' + snapshot.key()).remove();
+                        });
+                        bdRef.on("child_added", function(snapshot) {
+                            handleDisplay(snapshot); 
+                                    }, function(errorObj) {
+                                        console.log(errorObj.code);
+                                        showMessage("Erreur de récupération des données de Firebase : " + errorObj.code);
+                                    }
+                        );
+                        bdRef.on("child_changed", function(snapshot) {
+                            $('li#' + snapshot.key()).remove();
+                            handleDisplay(snapshot); 
+                                    }, function(errorObj) {
+                                        console.log(errorObj.code);
+                                        showMessage("Erreur de récupération des données de Firebase : " + errorObj.code);
+                                    }
+                        );
+                    }
+                });
+            }
+        });        
+    });
+
+
+    function showMessage(message) {
+        $("#dialog-message").text(message);
+        $("#dialog-modal").popup("open");
+    }
+
+        </script>
+</head>
+<body>
+
+
+<!-- Start of first page -->
+<div data-role="page" class="my-page" id="listPage" data-theme="b">
+    <div data-role="header">
+        <h1 id="listPage_header">BDTek</h1>
+    </div><!-- /header -->
+
+    <div data-role="popup" id="dialog-modal" class="ui-content">
+        <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
+        <p id="dialog-message"></p>
+    </div>
+
+    <div data-role="popup" id="contextualMenu" class="ui-content">
+            <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
+            <p style="align:center;"><h3 id="contextualMenu_Name"></h3></p>
+            <a data-role="button" data-icon="navigation" id="contextualMenu_Link" target="_new" href="">Voir sur Amazon</a>
+            <input type='hidden' id="contextualMenu_EAN"></input>
+    </div>
+
+    <div role="main" class="ui-content">
+        <form class="ui-filterable">
+          <input id="myFilter" data-type="search">
+        </form>
+        <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-role="listview" data-inset="true" data-filter="true" data-input="#myFilter" id="bdTekList" >
+            <!-- le contenu est ajouté dynamiquement -->
+        </ul>
+    </div><!-- /content -->
+
+</div><!-- /page -->
+
+</body>
+</html>
