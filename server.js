@@ -214,7 +214,16 @@ function loadConfig() {
     fs.readFile(configFile, function(err, data) {
         if(err) {
             console.log(currTime() + ' [CONFIG] ... ' + err);
-            return false;
+            console.log(currTime() + ' [CONFIG] ... Trying env variables');
+            try { 
+                initAmazonClient(ENV['AWSAccessKeyId'], ENV['AWSSecretKey'], ENV['AssociateTag']);
+                initFirebase(ENV['myFirebaseURL'],ENV['myFirebaseSecret']);
+                return true;
+           }
+            catch(err) {
+                console.log(currTime() + ' [CONFIG] ... ' + err);
+                return false;
+            }
         } else {
             try { 
                 var json = JSON.parse(data); 
