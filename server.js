@@ -102,13 +102,13 @@ function resUnauthorized(res,err,data) {
 }
 
 function lookup(snapshot) {
+    var dataRef = snapshot.ref();
    myAmazonClient.itemLookup({
       idType: 'EAN',
       itemId: snapshot.key(),
       domain: 'webservices.amazon.fr',
       responseGroup: 'ItemAttributes,Images'
     }).then(function(results) {
-      var dataRef = snapshot.ref();
       if (LOGAMAZON) { console.log(currTime() + " [LOOKUP] ... Found details for " + snapshot.key() + " : " + results[0].ItemAttributes[0].Title[0]); }
       dataRef.update({
             title: results[0].ItemAttributes[0].Title[0],
@@ -121,6 +121,11 @@ function lookup(snapshot) {
       });
     }).catch(function(err) {
       console.log(currTime() + " [LOOKUP] ... Error : " + JSON.stringify(err));
+      dataRef.update({
+            title: snapshot.key(),
+            author: "non trouve !",
+            needLookup: 0
+      });
     });
 }
 
