@@ -216,8 +216,8 @@ function loadConfig() {
             console.log(currTime() + ' [CONFIG] ... ' + err);
             console.log(currTime() + ' [CONFIG] ... Trying env variables');
             try { 
-                initAmazonClient(ENV['AWSAccessKeyId'], ENV['AWSSecretKey'], ENV['AssociateTag']);
-                initFirebase(ENV['myFirebaseURL'],ENV['myFirebaseSecret']);
+                initAmazonClient(process.env.AWSAccessKeyId, process.env.AWSSecretKey, process.env.AssociateTag);
+                initFirebase(process.env.myFirebaseURL, process.env.myFirebaseSecret);
                 return true;
            }
             catch(err) {
