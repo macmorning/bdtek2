@@ -72,7 +72,7 @@
                     if(data['alias']==userAlias) {
                         console.log(userAlias + " trouvé, key = " + snapchild.key());
                         bdRef = myFirebaseRef.child("bd").child(snapchild.key());
-                        bdRef.orderByKey();
+                        bdRef.orderByChild("title");
                         bdRef.on("child_removed", function(snapshot) {
                             $('li#' + snapshot.key()).remove();
                         });
