@@ -42,12 +42,15 @@
                 newLink.append($("<img src='"+(data["imageURL"]==null ? "":data["imageURL"])+"' class='ui-li-thumb'/>"));
                 newLink.append($("<h2>"+(data["title"]==null ? snapshot.key():data["title"])+"</h2>"));
                 newLink.append($("<p>"+(data["author"]==null ? "inconnu":data["author"])+"</p>"));
-                newLink.append($("<p class='ui-li-aside'>"+(data["publisher"]==null ? "?":data["publisher"])+"</p>"));
+                newLink.append($("<p>"+(data["publisher"]==null ? "inconnu":data["publisher"])+"</p>"));
+                if(data["series"]!=null) {
+                    newLink.append($("<p class='ui-li-aside'>"+data["series"]+(data["volume"]==null ? "":" "+data["volume"])+"</p>"));
+                }
                 newScoreRow.append(newLink);
             } else {
                 var newLink = $("<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='#' target='_blank'>");
                 newLink.append($("<h2>"+snapshot.key()+"</h2>"));
-                newLink.append($("<p>en attente</p>"));
+                newLink.append($("<p class='ui-li-aside'>en attente</p>"));
                 newScoreRow.append(newLink);
             }
             $("#bdTekList").append(newScoreRow);
