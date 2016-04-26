@@ -50,7 +50,7 @@
                 handleDisplay(snapshot); 
                         }, function(errorObj) {
                             console.log(errorObj.code);
-                            showMessage("Erreur de récupération des données de Firebase : " + errorObj.code);
+                            showMessage("Erreur de r&eacute;cup&eacute;ration des donn&eacute;es de Firebase : " + errorObj.code);
                         }
             );
             bdRef.on("child_changed", function(snapshot) {
@@ -58,7 +58,7 @@
                 handleDisplay(snapshot); 
                         }, function(errorObj) {
                             console.log(errorObj.code);
-                            showMessage("Erreur de récupération des données de Firebase : " + errorObj.code);
+                            showMessage("Erreur de r&eacute;cup&eacute;ration des donn&eacute;es de Firebase : " + errorObj.code);
                         }
             );
     }
@@ -195,10 +195,9 @@
     <div data-role="popup" id="importPage" class="ui-content">
             <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
             <div data-role="header" class="ui-header ui-bar-c">
-                 <h1>Saisir une liste d&aposEAN à importer</h1>
+                 <h1>Saisir une liste d&apos;EAN &agrave; importer</h1>
             </div>
             <div role="main" class="ui-content">
-                <label for="textarea">Saisir une liste d&quot;EAN :</label>
                 <textarea cols="40" rows="8" name="textarea" id="textarea"></textarea>
                 <button class="ui-shadow ui-btn ui-corner-all" name="btnImport" id="btnImport">Import</button>
             </div><!-- /content -->

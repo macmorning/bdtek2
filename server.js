@@ -103,13 +103,15 @@ function resUnauthorized(res,err,data) {
 
 function lookup(snapshot) {
     var dataRef = snapshot.ref();
+      console.log(currTime() + " [LOOKUP] ... Trying on amazon.fr");
    myAmazonClient.itemLookup({
       idType: 'EAN',
+      searchIndex: 'All',
       itemId: snapshot.key(),
       domain: 'webservices.amazon.fr',
       responseGroup: 'ItemAttributes,Images'
     }).then(function(results) {
-      if (LOGAMAZON) { console.log(currTime() + " [LOOKUP] ... Found details for " + snapshot.key() + " : " + results[0].ItemAttributes[0].Title[0]); }
+      if (LOGAMAZON) { console.log(currTime() + " [LOOKUP] ... Found details on amazon.fr for " + snapshot.key() + " : " + results[0].ItemAttributes[0].Title[0]); }
       dataRef.update({
             title: results[0].ItemAttributes[0].Title[0],
             author: results[0].ItemAttributes[0].Author,
@@ -121,11 +123,32 @@ function lookup(snapshot) {
       });
     }).catch(function(err) {
       console.log(currTime() + " [LOOKUP] ... Error : " + JSON.stringify(err));
-      dataRef.update({
-            title: snapshot.key(),
-            author: "non trouve !",
-            needLookup: 0
-      });
+      console.log(currTime() + " [LOOKUP] ... Trying on amazon.com");
+           myAmazonClient.itemLookup({
+              idType: 'EAN',
+              searchIndex: 'All',
+              itemId: snapshot.key(),
+              domain: 'webservices.amazon.com',
+              responseGroup: 'ItemAttributes,Images'
+            }).then(function(results) {
+              if (LOGAMAZON) { console.log(currTime() + " [LOOKUP] ... Found details on amazon.com for " + snapshot.key() + " : " + results[0].ItemAttributes[0].Title[0]); }
+              dataRef.update({
+                    title: results[0].ItemAttributes[0].Title[0],
+                    author: results[0].ItemAttributes[0].Author,
+                    imageURL: results[0].LargeImage[0].URL,
+                    detailsURL: results[0].DetailPageURL[0],
+                    published: results[0].ItemAttributes[0].PublicationDate[0],
+                    publisher: results[0].ItemAttributes[0].Publisher[0],
+                    needLookup: 0
+              });
+            }).catch(function(err) {
+              console.log(currTime() + " [LOOKUP] ... Error : " + JSON.stringify(err));
+              dataRef.update({
+                    title: snapshot.key(),
+                    author: "non trouve !",
+                    needLookup: 0
+              });
+            });
     });
 }
 
