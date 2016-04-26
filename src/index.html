@@ -23,10 +23,8 @@
     function escapeHtml(unsafe) {
         if(unsafe && isNaN(unsafe)) {// escapes Html characters
             return unsafe
-                .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;");
+                .replace(/>/g, "&gt;");
         } else if (!isNaN(unsafe)) {
             return unsafe;
         }
