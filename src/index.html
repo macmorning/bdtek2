@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/tiles.css"/>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
     <script src="http://cdn.firebase.com/js/client/2.3.0/firebase.js"></script>
     <script src="conf.js"></script>
     <script>
@@ -136,7 +137,7 @@
             var newScoreRow = $("<li id='" + snapshot.key() + "' class='ui-li-has-thumb'>");
             if(data["needLookup"]==0) {
                 var newLink = $("<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='#'>");
-                newLink.append($("<img src='"+(data["imageURL"]==null ? "":data["imageURL"])+"' class='ui-li-thumb'/>"));
+                newLink.append($("<img data-original='"+(data["imageURL"]==null ? "":data["imageURL"])+"' class='lazy ui-li-thumb'/>"));
                 newLink.append($("<h2>"+(data["title"]==null ? snapshot.key():data["title"])+"</h2>"));
                 newLink.append($("<p>"+(data["author"]==null ? "inconnu":data["author"])+"</p>"));
                 newLink.append($("<p>"+(data["publisher"]==null ? "inconnu":data["publisher"])+"</p>"));
@@ -154,7 +155,7 @@
             newScoreRow.bind("click",function(event){
                 popContextualMenu(snapshot);
             });
-
+            $("li#"+snapshot.key()+" img").lazyload();
             htmlForPath[snapshot.key()] = newScoreRow; 
       }
 
