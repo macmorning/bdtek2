@@ -119,7 +119,8 @@ function lookup(snapshot) {
             detailsURL: results[0].DetailPageURL[0],
             published: results[0].ItemAttributes[0].PublicationDate[0],
             publisher: results[0].ItemAttributes[0].Publisher[0],
-            needLookup: 0
+            needLookup: 0,
+            computedOrderField: dataRef.child('series').val() + "_" + ("0000" + dataRef.child('volume').val()).substr(-4,4) + "_" + results[0].ItemAttributes[0].Title[0]
       });
     }).catch(function(err) {
       console.log(currTime() + " [LOOKUP] ... Error : " + JSON.stringify(err));

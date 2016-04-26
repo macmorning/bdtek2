@@ -20,6 +20,19 @@
     var myUserName = "";
     var htmlForPath = {};
 
+    function escapeHtml(unsafe) {
+        if(unsafe && isNaN(unsafe)) {// escapes Html characters
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        } else if (!isNaN(unsafe)) {
+            return unsafe;
+        }
+        return false;
+    }
 
     function initAuthData(authData) {
             myUserID = authData.uid;
@@ -42,11 +55,10 @@
             
             
             bdRef = myFirebaseRef.child("bd").child(authData.uid);      // contient les bd de l'utilisateur
-            bdRef.orderByChild("title");
             bdRef.on("child_removed", function(snapshot) {
                 $('li#' + snapshot.key()).remove();
             });
-            bdRef.on("child_added", function(snapshot) {
+            bdRef.orderByChild("computedOrderField").on("child_added", function(snapshot) {
                 handleDisplay(snapshot); 
                         }, function(errorObj) {
                             console.log(errorObj.code);
@@ -82,16 +94,46 @@
 
     function popContextualMenu(snapshot) {
         var data = snapshot.val();
-        $("#contextualMenu_Name").text(data['title']==null ? snapshot.key():data['title']);
         $("#contextualMenu_Link").attr('href',(data['detailsURL']==null ? '#':data['detailsURL']));
         $("#contextualMenu_Remove").attr('onclick',"deleteChild('" + snapshot.key() + "'); $('#contextualMenu').popup('close');");
+        $("#contextualMenu_Refresh").attr('onclick',"lookupChild('" + snapshot.key() + "'); $('#contextualMenu').popup('close');");
+
+        $("#contextualMenu_Name").val(data['title']==null ? snapshot.key():data['title']);
+        $("#contextualMenu_Title").val(data['title']==null ? "":data['title']);
+        $("#contextualMenu_Volume").val(data['volume']==null ? "":data['volume']);
+        $("#contextualMenu_Series").val(data['series']==null ? "":data['series']);
+        $("#contextualMenu_Edition").val(data['edition']==null ? "":data['edition']);
+        $("#contextualMenu_Author").val(data['author']==null ? "":data['author']);
+        $("#contextualMenu_Publisher").val(data['publisher']==null ? "":data['publisher']);
+        $("#contextualMenu_URL").val(data['detailsURL']==null ? "":data['detailsURL']);
+        $("#contextualMenu_Image").val(data['imageURL']==null ? "":data['imageURL']);
+        $("#contextualMenu_Save").attr('onclick',"saveChild('" + snapshot.key() + "'); $('#contextualMenu').popup('close');");
+
+
         $("#contextualMenu").popup("open");
     }
     
     function deleteChild(key) {
             myFirebaseRef.child("bd").child(myUserID).child(key).remove();
     }
-    
+    function lookupChild(key) {
+            myFirebaseRef.child("bd").child(myUserID).child(key).child('needLookup').set(1);
+    }
+    function saveChild(key) {
+            var thisBdRef = myFirebaseRef.child("bd").child(myUserID).child(key);
+            thisBdRef.update({
+                title:      escapeHtml($("#contextualMenu_Title").val()),
+                volume:     escapeHtml($("#contextualMenu_Volume").val()),
+                series:     escapeHtml($("#contextualMenu_Series").val()),
+                edition:    escapeHtml($("#contextualMenu_Edition").val()),
+                author:     escapeHtml($("#contextualMenu_Author").val()),
+                publisher:  escapeHtml($("#contextualMenu_Publisher").val()),
+                detailsURL: $("#contextualMenu_URL").val(),
+                imageURL:   $("#contextualMenu_Image").val(),
+                computedOrderField: escapeHtml($("#contextualMenu_Series").val()) + "_" + ("0000" + escapeHtml($("#contextualMenu_Volume").val())).substr(-4,4) + "_" + escapeHtml($("#contextualMenu_Title").val())
+            });
+    }
+   
     function handleDisplay(snapshot) {    // add the rows to the list
             var data = snapshot.val();
             var newScoreRow = $("<li id='" + snapshot.key() + "' class='ui-li-has-thumb'>");
@@ -143,7 +185,8 @@
                 var ean = lines[i].trim().replace(/-/g,"");
                 if (!ean) continue;
                 bdRef.child(ean).set({
-                    needLookup: 1
+                    needLookup: 1,
+                    computedOrderField: "000"
                 });
             }
             $.mobile.changePage( "#listPage", { transition: "slideup", changeHash: true });
@@ -187,8 +230,19 @@
     <div data-role="popup" id="contextualMenu" class="ui-content">
             <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
             <p style="align:center;"><h3 id="contextualMenu_Name"></h3></p>
-            <a data-role="button" data-icon="navigation" id="contextualMenu_Link" target="_new" href="">Voir sur Amazon</a>
+            <a data-role="button" data-icon="navigation" id="contextualMenu_Link" target="_new" href="">Voir en ligne</a>
             <a data-role="button" data-icon="delete" id="contextualMenu_Remove" href="">Supprimer</a>
+            <a data-role="button" data-icon="search" id="contextualMenu_Refresh" href="">Rechercher</a>
+            <input placeholder="Titre" id="contextualMenu_Title" value=""/>
+            <input placeholder="S&eacute;rie" id="contextualMenu_Series" value=""/>
+            <input placeholder="Tome" id="contextualMenu_Volume" value=""/>
+            <input placeholder="Edition" id="contextualMenu_Edition" value=""/>
+            <input placeholder="Auteur(s)" id="contextualMenu_Author" value=""/>
+            <input placeholder="Editeur" id="contextualMenu_Publisher" value=""/>
+            <input placeholder="Lien web" id="contextualMenu_URL" value=""/>
+            <input placeholder="Lien image" id="contextualMenu_Image" value=""/>
+            
+            <a data-role="button" data-icon="edit" id="contextualMenu_Save" href="">Enregistrer</a>
             <input type='hidden' id="contextualMenu_EAN"></input>
     </div>
 

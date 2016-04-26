@@ -72,11 +72,10 @@
                     if(data['alias']==userAlias) {
                         console.log(userAlias + " trouvé, key = " + snapchild.key());
                         bdRef = myFirebaseRef.child("bd").child(snapchild.key());
-                        bdRef.orderByChild("title");
                         bdRef.on("child_removed", function(snapshot) {
                             $('li#' + snapshot.key()).remove();
                         });
-                        bdRef.on("child_added", function(snapshot) {
+                        bdRef.orderByChild("computedOrderField").on("child_added", function(snapshot) {
                             handleDisplay(snapshot); 
                                     }, function(errorObj) {
                                         console.log(errorObj.code);
@@ -122,7 +121,7 @@
     <div data-role="popup" id="contextualMenu" class="ui-content">
             <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
             <p style="align:center;"><h3 id="contextualMenu_Name"></h3></p>
-            <a data-role="button" data-icon="navigation" id="contextualMenu_Link" target="_new" href="">Voir sur Amazon</a>
+            <a data-role="button" data-icon="navigation" id="contextualMenu_Link" target="_new" href="">Voir en ligne</a>
             <input type='hidden' id="contextualMenu_EAN"></input>
     </div>
 
