@@ -19,7 +19,6 @@
     var authData = myFirebaseRef.getAuth(); // Check authentification status
     var myUserID = "";
     var myUserName = "";
-    var htmlForPath = {};
 
     function escapeHtml(unsafe) {
         if(unsafe && isNaN(unsafe)) {// escapes Html characters
@@ -156,7 +155,6 @@
                 popContextualMenu(snapshot);
             });
             $("li#"+snapshot.key()+" img").lazyload();
-            htmlForPath[snapshot.key()] = newScoreRow; 
       }
 
       
@@ -197,6 +195,9 @@
             userRef.child("alias").set(alias);
             $.mobile.changePage( "#listPage", { transition: "slideup", changeHash: true });
         });
+		
+		// if a filter is used, dispatch the sroll event so that lazyload fires
+		$( "#bdTekList" ).on( "filterablefilter", function( event, ui ) { $(window).trigger("scroll");});
     });
 
 
