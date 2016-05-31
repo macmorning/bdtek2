@@ -42,8 +42,7 @@
                 var newLink = $("<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='#'>");
                 newLink.append($("<img data-original='"+(data["imageURL"]==null ? "":data["imageURL"])+"' class='lazy ui-li-thumb'/>"));
                 newLink.append($("<h2>"+(data["title"]==null ? snapshot.key():data["title"])+"</h2>"));
-                newLink.append($("<p>"+(data["author"]==null ? "inconnu":data["author"])+"</p>"));
-                newLink.append($("<p>"+(data["publisher"]==null ? "inconnu":data["publisher"])+"</p>"));
+                newLink.append($("<p>"+(data["author"]==null ? "inconnu":data["author"]+"<br/>"+(data["publisher"]==null ? "inconnu":data["publisher"])+"</p>")));
                 if(data["series"]!=null) {
                     newLink.append($("<p class='ui-li-aside'>"+data["series"]+(data["volume"]==null ? "":" "+data["volume"])+"</p>"));
                 }
