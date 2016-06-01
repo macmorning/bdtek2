@@ -19,7 +19,7 @@
     var authData = myFirebaseRef.getAuth(); // Check authentification status
     var myUserID = "";
     var myUserName = "";
-	var seriesArray = [];
+    var seriesArray = [];
 	var authorsArray = [];
 
     function escapeHtml(unsafe) {
@@ -155,15 +155,18 @@
             newScoreRow.bind("click",function(event){
                 popContextualMenu(snapshot);
             });
-			
-			if(data['series']!=null && seriesArray.indexOf(data['series'])==-1) {
-				seriesArray.push(data['series']);
-				var newSeriesRow = $("<li id='" + data['series'] + "'>" + data['series'] + "</li>");
+            $("li#"+snapshot.key()+" img").lazyload();			
+			if(data['series']!=null && data['series']!="" && seriesArray.indexOf(data['series'])==-1) {
+				var series = data['series'].trim();
+				seriesArray.push(series);
+				var newSeriesRow = $("<li id='" + series + "'>" + series + "</li>");
 				$("#seriesList").append(newSeriesRow);				
 			}
-			if(data['author']!=null && data['author']!="") {
-				var authors = data['author'].split(",");
+			if(data['author']!=null && data['author']!="") {           
+                var separators = ["\n","/",";",","];     
+				var authors = data['author'].split(new RegExp(separators.join('|'), 'g'));
 				authors.forEach(function(author) {
+					author = author.trim();
 					if(authorsArray.indexOf(author)==-1) {
 						authorsArray.push(author);
 						var newAuthorRow = $("<li id='" + author + "'>" + author + "</li>");
@@ -171,7 +174,6 @@
 					}
 				});
 			}
-            $("li#"+snapshot.key()+" img").lazyload();
       }
 
       
@@ -195,7 +197,7 @@
 
         $("#dialog-modal").popup();
         $('#btnImport').click(function importBarcodes() {
-            var separators = ["\n",";",","," "];
+            var separators = ["\n","/",";",","," "];     
             var lines = $('#textarea').val().split(new RegExp(separators.join('|'), 'g')); 
             for(var i = 0;i < lines.length;i++){
                 var ean = lines[i].trim().replace(/-/g,"");
@@ -235,8 +237,6 @@
         <div class="ui-btn-left">
             <a href="#importPage" data-role="button" data-rel="popup" data-position-to="window" data-wrapperels="span" data-mini="true" data-icon="plus" data-iconpos="notext">Importer</a>
             <a href="#configPage" data-role="button" data-rel="popup" data-position-to="window" data-wrapperels="span" data-mini="true" data-icon="gear" data-iconpos="notext">Pr&eacute;f&eacute;rences</a>
-            <a href="#seriesPage" data-role="button" data-rel="popup" data-position-to="window" data-wrapperels="span" data-mini="true" data-icon="grid" data-iconpos="notext">S&eacute;ries</a>
-            <a href="#authorsPage" data-role="button" data-rel="popup" data-position-to="window" data-wrapperels="span" data-mini="true" data-icon="user" data-iconpos="notext">Auteurs</a>
         </div>
         <div class="ui-btn-right">
             <a href="#" onclick="logout();" data-role="button" data-wrapperels="span" data-mini="true" data-rel="page" data-icon="delete" data-iconpos="notext">D&eacute;connexion</a>
@@ -266,20 +266,6 @@
             <a data-role="button" data-icon="edit" id="contextualMenu_Save" href="">Enregistrer</a>
             <input type='hidden' id="contextualMenu_EAN"></input>
     </div>
-
-    <div data-role="popup" id="seriesPage" class="ui-content">
-            <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
-            <p style="align:center;"><h3>S&eacute;ries</h3></p>
-			<ul data-role="listview" data-inset="true" id="seriesList"  data-sort="true">
-			<!-- le contenu est ajouté dynamiquement -->
-			</ul>
-	</div>
-
-    <div data-role="popup" id="authorsPage" class="ui-content">
-            <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
-			<ul data-role="listview" data-inset="true" id="authorsList" data-sort="true">
-            <p style="align:center;"><h3>Auteurs</h3></p>
-    </div>	
 	
     <div data-role="popup" id="importPage" class="ui-content">
             <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext"  class="ui-btn-right">Fermer</a>
@@ -304,12 +290,23 @@
             </div><!-- /content -->
     </div>
     <div role="main" class="ui-content">
-        <form class="ui-filterable">
-          <input id="myFilter" data-type="search">
-        </form>
-        <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-role="listview" data-inset="true" data-filter="true" data-input="#myFilter" id="bdTekList" >
-            <!-- le contenu est ajouté dynamiquement -->
-        </ul>
+
+        <div id="searchDiv">
+            <form class="ui-filterable">
+              <input id="myFilter" data-type="search">
+            </form>
+            <div data-role="collapsible" data-mini="true"><h3>S&eacute;ries</h3>
+			        <ul data-role="listview" data-mini="true" data-inset="true" id="seriesList"  data-sort="true"></ul>
+	        </div>
+            <!--div data-role="collapsible" data-mini="true"><h3>Auteurs</h3>
+			        <ul data-role="listview" data-mini="true" data-inset="true" id="authorsList" data-sort="true"></ul>
+	        </div-->
+        </div>
+        <div id="listDiv">
+            <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-role="listview" data-inset="true" data-filter="true" data-input="#myFilter" id="bdTekList" >
+                <!-- le contenu est ajouté dynamiquement -->
+            </ul>
+        </div>
     </div><!-- /content -->
 
 </div><!-- /page -->
