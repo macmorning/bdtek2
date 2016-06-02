@@ -289,23 +289,25 @@
                 <button class="ui-shadow ui-btn ui-corner-all" name="btnSave" id="btnSave">Enregistrer</button>
             </div><!-- /content -->
     </div>
-    <div role="main" class="ui-content">
-
+    <div id="mainDiv" role="main" class="ui-content">
+    
         <div id="searchDiv">
             <form class="ui-filterable">
               <input id="myFilter" data-type="search">
             </form>
             <div data-role="collapsible" data-mini="true"><h3>S&eacute;ries</h3>
-			        <ul data-role="listview" data-mini="true" data-inset="true" id="seriesList"  data-sort="true"></ul>
-	        </div>
+		            <ul data-role="listview" data-mini="true" data-inset="true" id="seriesList"  data-sort="true"></ul>
+            </div>
             <!--div data-role="collapsible" data-mini="true"><h3>Auteurs</h3>
-			        <ul data-role="listview" data-mini="true" data-inset="true" id="authorsList" data-sort="true"></ul>
-	        </div-->
+		            <ul data-role="listview" data-mini="true" data-inset="true" id="authorsList" data-sort="true"></ul>
+            </div-->
         </div>
         <div id="listDiv">
             <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-role="listview" data-inset="true" data-filter="true" data-input="#myFilter" id="bdTekList" >
                 <!-- le contenu est ajouté dynamiquement -->
             </ul>
+        </div>
+        <div id="clearedDiv">
         </div>
     </div><!-- /content -->
 
