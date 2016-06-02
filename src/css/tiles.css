@@ -5,6 +5,14 @@
 .my-page .ui-listview li .ui-btn .ui-li-aside {
 	color: #eee;
 }
+#searchDiv li a {
+	color: white;
+	text-decoration: none;
+	font-size: 0,5em;
+}
+#seriesContainer {
+	display: none;
+}
 
 /* First breakpoint is 48em (768px). 3 column layout. Tiles 250x250 pixels incl. margin at the breakpoint. */
 @media ( min-width: 48em ) {
@@ -138,21 +146,13 @@
 
 /* Third breakpoint is 87.5em (1400px). 5 column layout. Tiles will be 250x250 pixels incl. margin again at the breakpoint. */
 @media ( min-width: 87.5em ) {
-    #mainDiv {
-        margin-left:300px;
-    }
-    #searchDiv {
-        float: left;
-        width: 300px;
-        margin-left: -300px;
-    }
-    #listDiv {
-        float: right;
-        width: 100%;
-    }
-    #clearDiv {
-        clear: both;
-    }
+
+    #seriesContainer { display:block; }
+    #searchDiv,#listDiv { float:left; }
+	#searchDiv { width:20%; margin: 0 1% 0 2%;}
+	#listDiv { width:76%; margin: 0 1% 0 0;}
+	#contextualMenu { min-width:300px;}
+	
 	.my-page .ui-content {
 		padding: .625em; /* 10px */
 	}

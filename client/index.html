@@ -159,10 +159,10 @@
 			if(data['series']!=null && data['series']!="" && seriesArray.indexOf(data['series'])==-1) {
 				var series = data['series'].trim();
 				seriesArray.push(series);
-				var newSeriesRow = $("<li id='" + series + "'>" + series + "</li>");
+				var newSeriesRow = $("<li><a href='#' onclick='$(\"#myFilter\").val(\""+series.replace("'","''")+"\").trigger(\"keyup\");return false;'>" + series + "</a></li>");
 				$("#seriesList").append(newSeriesRow);				
 			}
-			if(data['author']!=null && data['author']!="") {           
+			/*if(data['author']!=null && data['author']!="") {           
                 var separators = ["\n","/",";",","];     
 				var authors = data['author'].split(new RegExp(separators.join('|'), 'g'));
 				authors.forEach(function(author) {
@@ -173,7 +173,7 @@
 						$("#authorsList").append(newAuthorRow);
 					}
 				});
-			}
+			}*/
       }
 
       
@@ -295,7 +295,7 @@
             <form class="ui-filterable">
               <input id="myFilter" data-type="search">
             </form>
-            <div data-role="collapsible" data-mini="true"><h3>S&eacute;ries</h3>
+            <div id="seriesContainer" data-role="collapsible" data-mini="true"><h3>S&eacute;ries</h3>
 		            <ul data-role="listview" data-mini="true" data-inset="true" id="seriesList"  data-sort="true"></ul>
             </div>
             <!--div data-role="collapsible" data-mini="true"><h3>Auteurs</h3>
@@ -306,8 +306,6 @@
             <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-role="listview" data-inset="true" data-filter="true" data-input="#myFilter" id="bdTekList" >
                 <!-- le contenu est ajouté dynamiquement -->
             </ul>
-        </div>
-        <div id="clearedDiv">
         </div>
     </div><!-- /content -->
 
