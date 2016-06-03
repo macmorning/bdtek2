@@ -58,7 +58,8 @@
                 $('li#' + snapshot.key()).remove();
             });
             bdRef.orderByChild("computedOrderField").on("child_added", function(snapshot) {
-                handleDisplay(snapshot); 
+                		$.mobile.loading( 'hide' );
+						handleDisplay(snapshot); 
                         }, function(errorObj) {
                             console.log(errorObj.code);
                             showMessage("Erreur de r&eacute;cup&eacute;ration des donn&eacute;es de Firebase : " + errorObj.code);
@@ -159,7 +160,7 @@
 			if(data['series']!=null && data['series']!="" && seriesArray.indexOf(data['series'])==-1) {
 				var series = data['series'].trim();
 				seriesArray.push(series);
-				var newSeriesRow = $("<li><a href='#' onclick='$(\"#myFilter\").val(\""+series.replace("'","''")+"\").trigger(\"keyup\");return false;'>" + series + "</a></li>");
+				var newSeriesRow = $("<li><a href='#' onclick='$(\"#myFilter\").val(this.text).trigger(\"keyup\");window.scrollTo(0,0);;return false;'>" + series + "</a></li>");
 				$("#seriesList").append(newSeriesRow);				
 			}
 			/*if(data['author']!=null && data['author']!="") {           
@@ -194,7 +195,14 @@
             console.log("Ready, initAuthData");
             initAuthData(authData);
         }
-
+		$( document ).on( "mobileinit", function() {
+			$.mobile.loader.prototype.options.text = "loading";
+			$.mobile.loader.prototype.options.textVisible = false;
+			$.mobile.loader.prototype.options.theme = "a";
+			$.mobile.loader.prototype.options.html = "";
+		});
+		$.mobile.loading( 'show' );
+		
         $("#dialog-modal").popup();
         $('#btnImport').click(function importBarcodes() {
             var separators = ["\n","/",";",","," "];     

@@ -13,6 +13,8 @@
     <script src="conf.js"></script>
     <script>
 
+
+    var seriesArray = [];
     function parse(val) {
         var result = "Not found",
             tmp = [];
@@ -58,6 +60,12 @@
                 popContextualMenu(snapshot);
             });
             $("li#"+snapshot.key()+" img").lazyload();
+						if(data['series']!=null && data['series']!="" && seriesArray.indexOf(data['series'])==-1) {
+				var series = data['series'].trim();
+				seriesArray.push(series);
+				var newSeriesRow = $("<li><a href='#' onclick='$(\"#myFilter\").val(this.text).trigger(\"keyup\");window.scrollTo(0,0);;return false;'>" + series + "</a></li>");
+				$("#seriesList").append(newSeriesRow);				
+			}
       }
 
       
@@ -66,6 +74,13 @@
         $("#listPage_header").text("Liste de " + userAlias);
         var myFirebaseRef = new Firebase(myFirebaseURL);// Initialize the Firebase DB; make sure you set myFirebaseURL in conf.js
 
+		$( document ).on( "mobileinit", function() {
+			$.mobile.loader.prototype.options.text = "loading";
+			$.mobile.loader.prototype.options.textVisible = false;
+			$.mobile.loader.prototype.options.theme = "a";
+			$.mobile.loader.prototype.options.html = "";
+		});
+		$.mobile.loading( 'show' );
         var userRef = myFirebaseRef.child("users");
         userRef.once('value',function(snap) {
             if(snap.val()) {
@@ -78,7 +93,8 @@
                             $('li#' + snapshot.key()).remove();
                         });
                         bdRef.orderByChild("computedOrderField").on("child_added", function(snapshot) {
-                            handleDisplay(snapshot); 
+							$.mobile.loading( 'hide' );
+							handleDisplay(snapshot); 
                                     }, function(errorObj) {
                                         console.log(errorObj.code);
                                         showMessage("Erreur de récupération des données de Firebase : " + errorObj.code);
@@ -131,13 +147,24 @@
             <input type='hidden' id="contextualMenu_EAN"></input>
     </div>
 
-    <div role="main" class="ui-content">
-        <form class="ui-filterable">
-          <input id="myFilter" data-type="search">
-        </form>
-        <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-role="listview" data-inset="true" data-filter="true" data-input="#myFilter" id="bdTekList" >
-            <!-- le contenu est ajouté dynamiquement -->
-        </ul>
+    <div id="mainDiv" role="main" class="ui-content">
+    
+        <div id="searchDiv">
+            <form class="ui-filterable">
+              <input id="myFilter" data-type="search">
+            </form>
+            <div id="seriesContainer" data-role="collapsible" data-mini="true"><h3>S&eacute;ries</h3>
+		            <ul data-role="listview" data-mini="true" data-inset="true" id="seriesList"  data-sort="true"></ul>
+            </div>
+            <!--div data-role="collapsible" data-mini="true"><h3>Auteurs</h3>
+		            <ul data-role="listview" data-mini="true" data-inset="true" id="authorsList" data-sort="true"></ul>
+            </div-->
+        </div>
+        <div id="listDiv">
+            <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-role="listview" data-inset="true" data-filter="true" data-input="#myFilter" id="bdTekList" >
+                <!-- le contenu est ajouté dynamiquement -->
+            </ul>
+        </div>
     </div><!-- /content -->
 
 </div><!-- /page -->
