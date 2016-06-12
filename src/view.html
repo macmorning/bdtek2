@@ -96,7 +96,8 @@
 							$.mobile.loading( 'hide' );
 							handleDisplay(snapshot); 
                                     }, function(errorObj) {
-                                        console.log(errorObj.code);
+										$.mobile.loading( 'hide' );
+                                       console.log(errorObj.code);
                                         showMessage("Erreur de récupération des données de Firebase : " + errorObj.code);
                                     }
                         );

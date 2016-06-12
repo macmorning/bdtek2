@@ -61,6 +61,7 @@
                 		$.mobile.loading( 'hide' );
 						handleDisplay(snapshot); 
                         }, function(errorObj) {
+							$.mobile.loading( 'hide' );
                             console.log(errorObj.code);
                             showMessage("Erreur de r&eacute;cup&eacute;ration des donn&eacute;es de Firebase : " + errorObj.code);
                         }
